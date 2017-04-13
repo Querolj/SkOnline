@@ -1,0 +1,9 @@
+Players : pseudo, email, password
+
+Players's building : pseudo, building1,..., buildingn (des entiers représentants les niveaux des batiments)
+
+Player's tech : pseudo, tech1,..., techn
+
+Player's units : pseudo, unit1,..., unitn
+
+Players's tasks : pseudo, task_building, task_unit1,..., task_unitn, task_tech

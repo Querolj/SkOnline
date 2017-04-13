@@ -1,0 +1,53 @@
+
+{% extends 'base.html.twig' %}
+
+{% block menu %}
+
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+	console.log("k");
+	
+	$("#button_building").click(function()
+	{
+		console.log("button build");
+		var email = $("#input_email").val();
+		var password = $("#input_password").val();
+		
+		console.log(email);
+		console.log(password);
+
+	});
+
+	
+	$("#button_registration").click(function()
+	{
+		console.log("button_registration");
+		var email = $("#input_email").val();
+		var password = $("#input_password").val();
+		console.log(email);
+		console.log(password);
+
+	});
+
+	$("#button_login").click(function()
+	{
+		console.log("button login");
+		var email = $("#input_email").val();
+		var password = $("#input_password").val();
+		console.log(email);
+		console.log(password);
+		document.location.href = "http://localhost:8000/login";
+	});
+
+
+	
+	
+</script>
+
+{% endblock %}
