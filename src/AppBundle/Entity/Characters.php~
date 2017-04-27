@@ -69,6 +69,18 @@ class Characters
      */
     private $ressources;
 
+    /**
+     * @var int
+     * @ORM\Column(name="region", type="integer")
+     */
+    private $region;
+
+    /**
+     * @var int
+     * @ORM\Column(name="emplacement", type="integer")
+     */
+    private $emplacement;
+    
 
     /**
      * Get id
@@ -103,6 +115,8 @@ class Characters
     {
         return $this->idPlayer;
     }
+
+    
 
     /**
      * Set pseudo
@@ -151,6 +165,8 @@ class Characters
     {
         return $this->image;
     }
+
+
 
     /**
      * Set buildings
@@ -246,5 +262,52 @@ class Characters
     public function getPlayer()
     {
         return $this->player;
+    }
+
+    /**
+     * Get region
+     *
+     * @return int
+     */
+    public function getRegion()
+    {
+        return $this->region;
+    }
+
+    /**
+     * Set region
+     *
+     * @param int $region
+     *
+     * @return Characters
+     */
+    public function setRegion($region)
+    {
+        $this->region = $region;
+
+        return $this;
+    }
+
+    /**
+     * Get emplacement
+     *
+     * @return int
+     */
+    public function getEmplacement()
+    {
+        return $this->emplacement;
+    }
+
+    /**
+     * Set emplacement
+     *
+     * @param int $emplacement
+     *
+     * @return Characters
+     */
+    public function setEmplacement($emplacement)
+    {
+        $this->emplacement = $emplacement;
+        return $this;
     }
 }

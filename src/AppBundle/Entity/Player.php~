@@ -187,4 +187,28 @@ class Player
     {
         return $this->characters;
     }
+
+    /**
+     * Add character
+     *
+     * @param \AppBundle\Entity\Characters $character
+     *
+     * @return Player
+     */
+    public function addCharacter(\AppBundle\Entity\Characters $character)
+    {
+        $this->characters[] = $character;
+
+        return $this;
+    }
+
+    /**
+     * Remove character
+     *
+     * @param \AppBundle\Entity\Characters $character
+     */
+    public function removeCharacter(\AppBundle\Entity\Characters $character)
+    {
+        $this->characters->removeElement($character);
+    }
 }
