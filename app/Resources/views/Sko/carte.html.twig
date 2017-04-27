@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+
+<link rel="stylesheet" href="{{ asset('app/Resources/public/style.css') }}" type="text/css" media="screen" />
+
+{% endblock %}
+
+
+
+{% block body %}
+<table id="box-table-a" summary="Employee Pay Sheet">
+    <thead>
+    	<tr>
+        	<th scope="col">Location</th>
+            <th scope="col">Chef</th>
+            <th scope="col">Options</th>
+        </tr>
+    </thead>
+    <tbody>
+    	<tr>
+        	<td>Stephen C. Cox</td>
+            <td>300</td>
+            <td>
+            	<button id="attaquer">Attaquer</button>
+            	<button id="message">Envoyer un message</button>
+            </td>
+        </tr>
+        <tr>
+        	<td>Josephin Tan</td>
+            <td>150</td>
+            <td>-</td>
+        </tr>
+        <tr>
+        	<td>Joyce Ming</td>
+            <td>200</td>
+            <td>35</td>
+        </tr>
+        <tr>
+        	<td>James A. Pentel</td>
+            <td>175</td>
+            <td>25</td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
+

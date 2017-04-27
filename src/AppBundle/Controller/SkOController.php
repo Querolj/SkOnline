@@ -69,6 +69,7 @@ class SkOController extends Controller
         }
 
         return $this->render('Sko/menu.html.twig', array('form' => $form->createView()));
+        // En plus renvoyer la balise
     }
 
     /**
@@ -130,4 +131,36 @@ class SkOController extends Controller
         return $this->render('Sko/accueil.html.twig', array('pseudo' => $player));
     }
 
+    /**
+     * @Route("/carte", name="carte")
+     */
+    public function carteAction(Request $request)
+    {
+        /*
+            String (type d'emplacement), String(location, n:m)
+        */
+        return $this->render('Sko/carte.html.twig', array(
+
+            ));
+    }
+
+    /**
+     * @Route("/construction", name="construction")
+     */
+    public function constructionAction(Request $request)
+    {
+        return $this->render('Sko/construction.html.twig', array(
+
+            ));
+    }
+
+    /**
+     * @Route("/unite", name="unite")
+     */
+    public function uniteAction(Request $request)
+    {
+        return $this->render('Sko/unite.html.twig', array(
+
+            ));
+    }
 }
