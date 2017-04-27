@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block menu %}
+<h1> Bonjour {{pseudo}}</h1>
+{% endblock %}
+
+{% block body %}
+<br><br><br>
+<p id="coucou"></p>
+
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript">
+    var coucou = 0;
+     window.setInterval(
+     function () {
+         coucou = coucou + 1;
+         document.getElementById("coucou").innerHTML = "You have " + coucou + " like!";
+     }, 1000);
+</script>
+
+{% endblock %}

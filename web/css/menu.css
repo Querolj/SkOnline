@@ -1,0 +1,28 @@
+#form>div, #registration {
+    display: block;
+    float: left;
+}
+#form>div {
+    display: inline;
+    margin: 1em;
+}
+
+#registration {
+    margin: 1em;
+}
+
+.item>h1 {
+    position: absolute;
+    z-index: 4;
+    color: white;
+    text-align: center;
+}
+img {
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+body{
+    background-color: black;
+}

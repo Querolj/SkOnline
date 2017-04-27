@@ -11,9 +11,11 @@
 
 <title>{% block title %}Welcome!{% endblock %}</title>
 <script src="http://code.jquery.com/jquery-1.11.3.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
 {% block stylesheets %}{% endblock %}
 <!-- Bootstrap core CSS -->
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 
 </head>
 
@@ -31,12 +33,12 @@
 
         <a class="navbar-brand" href="/">Skeletons ONLINE</a>
       </div>
-      <div id="navbar" class="navbar-collapse collapse">
+      <div id="navbar" class="navbar-collapse">
         {% block menu %}{% endblock %}
         <!--
-        <form class="navbar-form navbar-right">  
+        <form class="navbar-form navbar-right">
   <input type="button" value="Construction" href="/construction" id="button_building"/>
-  <input type="button" value="Inscription" href="/registration" id="button_registration"/> 
+  <input type="button" value="Inscription" href="/registration" id="button_registration"/>
           <div class="form-group">
             <input type="text" placeholder="Email" class="form-control" id="input_email">
           </div>
@@ -58,4 +60,3 @@
 {% block javascripts %}{% endblock %}
 </body>
 </html>
-
