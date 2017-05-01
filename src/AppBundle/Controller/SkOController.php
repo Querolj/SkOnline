@@ -3,6 +3,8 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Player;
+use AppBundle\Entity\Map;
+use AppBundle\Entity\Characters;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -12,6 +14,9 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 class SkOController extends Controller
 {
@@ -21,56 +26,74 @@ class SkOController extends Controller
     public function indexAction(Request $request)
     {
         $player = new Player;
-
-        $form = $this->createFormBuilder($player)
-        ->add('email', TextType::class, array('label' => 'Email :'))
-        ->add('password', PasswordType::class, array('label' => 'Mot de passe :'))
-        ->add('login', SubmitType::class, array('label' => 'Login'))
-        ->getForm();
-
-        $form->handleRequest($request);
-
-
-
-        if($form->isSubmitted() && $form->isValid())
+        if($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY'))
         {
-            $password = $form['password']->getData();
-            $email = $form['email']->getData();
-            $encoded_pass = sha1($form['password']->getData());
-            $date = date_create();
+
+        }
+        else
+        {
+            $form = $this->createFormBuilder($player)
+            ->add('email', TextType::class, array('label' => 'Email :'))
+            ->add('password', PasswordType::class, array('label' => 'Mot de passe :'))
+            ->add('login', SubmitType::class, array('label' => 'Login'))
+            ->getForm();
+
+            $form->handleRequest($request);
+
+
+
+            if($form->isSubmitted() && $form->isValid())
+            {
+                $password = $form['password']->getData();
+                $email = $form['email']->getData();
+                $encoded_pass = sha1($form['password']->getData());
+                $date = date_create();
             /*
                 Recherche dans la base de données si les différents éléments entrés
                 sont présents afin de connecter la personne
             */
-            $player = $this->getDoctrine()
-                         ->getRepository('AppBundle:Player')
-                         ->findOneByEmail($email);
-            $pass_check = $this->getDoctrine()
-                         ->getRepository('AppBundle:Player')
-                         ->findByPassword($encoded_pass);
+                $player = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findOneByEmail($email);
+                $pass_check = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findByPassword($encoded_pass);
 
-            if(!$player)
-            {
-                return $this->redirectToRoute('registration');
-            }
-            else
-            {
-                $pseudo = $this->getDoctrine()
+                if(!$player)
+                {
+                    return $this->redirectToRoute('registration');
+                }
+                else
+                {
+                    $pseudo = $this->getDoctrine()
                     ->getRepository('AppBundle:Player')
                     ->findOneByEmail($email)->getPseudo();
-                /* Met à jour la date de connection */
-                $player->setDateLog($date);
-                /* Entre les différents élements dans la base */
-                $em = $this->getDoctrine()->getManager();
+                    /* Met à jour la date de connection */
+                    $player->setDateLog($date);
+                    /* Entre les différents élements dans la base */
+                    $em = $this->getDoctrine()->getManager();
                 $em->persist($player); // prépare l'insertion dans la BD
                 $em->flush(); // insère dans la BD
+
+
+                $token = new UsernamePasswordToken($player, $player->getPassword(), "main", $player->getRoles());
+
+                $event = new InteractiveLoginEvent(new Request(), $token);
+
+                $this->container->get("event_dispatcher")->dispatch("security.interactive_login", $event);
+
+                $this->container->get("security.token_storage")->setToken($token);
+
                 return $this->redirectToRoute('accueil',  array('pseudo' => $pseudo));
             }
         }
-
         return $this->render('Sko/menu.html.twig', array('form' => $form->createView()));
-        // En plus renvoyer la balise
     }
+
+
+    return $this->render('Sko/menu.html.twig');
+        // En plus renvoyer la balise
+}
 
     /**
      * @Route("/registration", name="registration")
@@ -93,11 +116,18 @@ class SkOController extends Controller
         {
             $pseudo = $form['pseudo']->getData();
             $email = $form['email']->getData();
-            $encoded_pass = sha1($form['password']->getData());
+            $player->setSalt(uniqid(mt_rand()));
+
+            $encoder = $this->container->get('sha256salted_encoder')
+            ->getEncoder($player);
+            $password = $encoder->encodePassword($form['password']->getData(), $player->getSalt());
+
+            //$encoded_pass = sha1($form['password']->getData());
+
             $date = date_create();
             $player->setPseudo($pseudo);
             $player->setEmail($email);
-            $player->setPassword($encoded_pass);
+            $player->setPassword($password);
             $player->setDateLog($date);
 
             $em = $this->getDoctrine()->getManager();
@@ -109,15 +139,12 @@ class SkOController extends Controller
     }
 
 
-
-
-
     /**
      * @Route("/login", name="login")
      */
     public function loginAction(Request $request)
     {
-        $em = $this->getDoctrine()->getEntityManager();
+        $em = $this->getDoctrine()->getManager();
 
         return $this->render('Sko/login.html.twig', array());
     }
@@ -131,21 +158,25 @@ class SkOController extends Controller
         return $this->render('Sko/accueil.html.twig', array('pseudo' => $player));
     }
 
+
     /**
      * @Route("/carte", name="carte")
      */
     public function carteAction(Request $request)
     {
-        /*
-            String (type d'emplacement), String(location, n:m)
-        */
-        return $this->render('Sko/carte.html.twig', array(
+        $map = $this->getDoctrine()->getRepository('AppBundle:Map')->findAll();
 
+        dump($request->getUser());
+        return $this->render('Sko/carte.html.twig', array(
+            'map' => $map
             ));
     }
 
+    
+
     /**
      * @Route("/construction", name="construction")
+     * @Security("has_role('ROLE_USER')")
      */
     public function constructionAction(Request $request)
     {
@@ -160,6 +191,16 @@ class SkOController extends Controller
     public function uniteAction(Request $request)
     {
         return $this->render('Sko/unite.html.twig', array(
+
+            ));
+    }
+
+    /**
+     * @Route("/logout", name="logout")
+     */
+    public function uniteLogout(Request $request)
+    {
+        return $this->render('Sko/menu.html.twig', array(
 
             ));
     }

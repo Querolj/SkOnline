@@ -4,6 +4,12 @@ parameters:
 #    parameter_name: value
 
 services:
+    sha256salted_encoder:
+        class: AppBundle\Service\Sha256Salted
+    app.player_provider:
+        class: AppBundle\Security\PlayerProvider
+        arguments: ['@doctrine']
+
 #    service_name:
 #        class: AppBundle\Directory\ClassName
 #        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]

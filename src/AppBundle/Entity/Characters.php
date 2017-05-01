@@ -70,16 +70,11 @@ class Characters
     private $ressources;
 
     /**
-     * @var int
-     * @ORM\Column(name="region", type="integer")
+     * @ORM\OneToMany(targetEntity="Map", mappedBy="character" )
      */
-    private $region;
+    private $location;
 
-    /**
-     * @var int
-     * @ORM\Column(name="emplacement", type="integer")
-     */
-    private $emplacement;
+    
     
 
     /**
@@ -245,7 +240,7 @@ class Characters
      *
      * @param \AppBundle\Entity\Player $player
      *
-     * @return Characters
+     * @return Map
      */
     public function setPlayer(\AppBundle\Entity\Player $player = null)
     {
@@ -264,50 +259,4 @@ class Characters
         return $this->player;
     }
 
-    /**
-     * Get region
-     *
-     * @return int
-     */
-    public function getRegion()
-    {
-        return $this->region;
-    }
-
-    /**
-     * Set region
-     *
-     * @param int $region
-     *
-     * @return Characters
-     */
-    public function setRegion($region)
-    {
-        $this->region = $region;
-
-        return $this;
-    }
-
-    /**
-     * Get emplacement
-     *
-     * @return int
-     */
-    public function getEmplacement()
-    {
-        return $this->emplacement;
-    }
-
-    /**
-     * Set emplacement
-     *
-     * @param int $emplacement
-     *
-     * @return Characters
-     */
-    public function setEmplacement($emplacement)
-    {
-        $this->emplacement = $emplacement;
-        return $this;
-    }
 }
