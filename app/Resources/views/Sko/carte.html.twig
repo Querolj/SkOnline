@@ -9,6 +9,12 @@
 
 
 {% block body %}
+<div id="message_popup" title="Envoyer un message">
+
+I'm in a dialog
+
+</div>
+
 <table id="box-table-a" summary="Employee Pay Sheet">
     <thead>
     	<tr>
@@ -23,8 +29,15 @@
             <td>{{ location.emplacement }}</td>
             <td>{{ location.character.pseudo }}</td>
             <td>
-                <button id="attaquer">Attaquer</button>
-                <button id="message">Envoyer un message</button>
+                <button class="attaquer" 
+                value="{{ location.emplacement }}"
+                player="{{ location.character.player.pseudo }}"
+                 >Attaquer {{ location.character.pseudo }}</button>
+
+                <button class="message"
+                value="{{ location.emplacement }}"
+                player="{{ location.character.player.pseudo }}"
+                >Envoyer un message</button>
             </td>
         </tr>
 
@@ -32,5 +45,33 @@
 
     </tbody>
 </table>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    $(".attaquer").click(function()
+    {
+        var emplacement = $(this).val();
+        var player_a_attaquer = $(this).attr('player');
+        console.log(emplacement);
+        console.log(player_a_attaquer);
+        
+    });
+
+    $(".message").click(function()
+    {
+        var emplacement = $(this).val();
+        var player_envoie = $(this).attr('player');
+        console.log(emplacement);
+        console.log(player_envoie);
+        if($(document).ready())
+        {
+            jQuery('#message_popup').dialog(); 
+        }
+              
+    });
+
+
+</script>
 {% endblock %}
 
