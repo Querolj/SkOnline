@@ -1,13 +1,31 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+<link rel="stylesheet" href="{{asset('css/accueil.css')}}">
+{% endblock %}
+
 {% block menu %}
+
 <h1> Bonjour {{pseudo}}</h1>
+<ul class="nav navbar-nav">
+      <li><a href="/royaumes">Royaumes</a></li>
+      <li><a href="/carte">Carte</a></li>
+</ul>
+<div class="nav navbar-right">
+    <ul class="ressources">
+          <li id="os"></li>
+          <li id="pierre"></li>
+          <li id="metal"></li>
+          <li id="human"></li>
+    </ul>
+	<a id="logout" class="btn btn-default" href="/logout"><span class="glyphicon glyphicon-off"></span> Logout</a>
+</div>
 {% endblock %}
 
 {% block body %}
 <br><br><br>
 <p id="coucou"></p>
-
+<a class="btn btn-default" href="{{ path('createPerso', {'pseudo': pseudo}) }}">Création de personnage</button>
 {% endblock %}
 
 {% block javascripts %}
@@ -16,7 +34,10 @@
      window.setInterval(
      function () {
          coucou = coucou + 1;
-         document.getElementById("coucou").innerHTML = "You have " + coucou + " like!";
+         document.getElementById("os").innerHTML ="Bois <span class='badge'>"+coucou+"</span>" ;
+         document.getElementById("pierre").innerHTML = "Pierre <span class='badge'>"+coucou+"</span>";
+         document.getElementById("metal").innerHTML = "Metal <span class='badge'>"+coucou+"</span>";
+         document.getElementById("human").innerHTML = "Humain <span class='badge'>"+coucou+"</span>";
      }, 1000);
 </script>
 

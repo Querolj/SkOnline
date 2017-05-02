@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Player;
+use AppBundle\Entity\Characters;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -12,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class SkOController extends Controller
 {
@@ -162,5 +164,54 @@ class SkOController extends Controller
         return $this->render('Sko/unite.html.twig', array(
 
             ));
+    }
+
+    /**
+     * @Route("/createPerso", name="createPerso")
+     */
+    public function createPersoAction(Request $request)
+    {
+        $character = new Characters;
+        $form = $this->createFormBuilder($character)
+        ->add('pseudo', TextType::class, array('label' => 'Nom du personnage :'))
+        ->add('region', TextType::class, array('label' => 'Région choisie : '))
+        ->add('image', FileType::class, array('label' => 'Image : '))
+        ->add('emplacement', TextType::class, array('label' => 'Emplacement choisi : '))
+        ->add('creation', SubmitType::class, array('label' => 'Création'))
+        ->getForm();
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $pseudo = $request->query->get('pseudo');
+            $player = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findOneByPseudo($pseudo);
+            $idPlayer = $player->getId();
+            $name = $form['pseudo']->getData();
+            $region = $form['region']->getData();
+            $image = $form['image']->getData();
+            $emplacement = $form['emplacement']->getData();
+
+            $file = $character->getImage();
+           $fileName = uniqid().'.'.$file->guessExtension();
+           $file->move(
+               $this->getParameter('image_directory'),
+               $fileName
+           );
+
+            $character->setPseudo($name);
+            $character->setPlayer($player);
+            $character->setImage($file);
+            $character->setRegion($region);
+            $character->setEmplacement($emplacement);
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($character); // prépare l'insertion dans la BD
+            $em->flush(); // insère dans la BD
+            return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo));
+        }
+        return $this->render('Sko/createPerso.html.twig', array('form' => $form->createView()));
     }
 }

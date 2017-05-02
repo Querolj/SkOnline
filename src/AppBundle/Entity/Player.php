@@ -51,7 +51,7 @@ class Player
     private $dateLog;
 
     /**
-     * @ORM\OneToMany(targetEntity="Characters", mappedBy="idPlayer")
+     * @ORM\OneToMany(targetEntity="Characters", mappedBy="player")
      */
     private $characters;
 

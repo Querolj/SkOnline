@@ -3,6 +3,8 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Characters
@@ -28,44 +30,39 @@ class Characters
      */
     private $player;
 
-    /**
-     * @var int
-     * @ORM\Column(name="id_player", type="integer")
-     */
-    private $idPlayer;
 
     /**
      * @var string
-     *
      * @ORM\Column(name="pseudo", type="string", length=255, unique=true)
      */
     private $pseudo;
 
     /**
-     * @var string
+     * Image file
      *
-     * @ORM\Column(name="image", type="string", length=255)
+     * @var File
+     *
+     * @Assert\File(
+     *     maxSize = "5M",
+     *     mimeTypes = {"image/jpeg", "image/gif", "image/png", "image/tiff"},
+     *     maxSizeMessage = "The maxmimum allowed file size is 5MB.",
+     *     mimeTypesMessage = "Only the filetypes image are allowed."
+     * )
      */
     private $image;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(name="buildings", type="array")
+     * @ORM\OneToMany(targetEntity="building", mappedBy="player")
      */
     private $buildings;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(name="units", type="array")
+     * @ORM\OneToMany(targetEntity="units", mappedBy="player")
      */
     private $units;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(name="ressources", type="array")
+     * @ORM\OneToMany(targetEntity="Ressources", mappedBy="player")
      */
     private $ressources;
 
@@ -80,7 +77,13 @@ class Characters
      * @ORM\Column(name="emplacement", type="integer")
      */
     private $emplacement;
-    
+
+
+    public function __construct(){
+        $this->ressources = new ArrayCollection();
+        $this->units = new ArrayCollection();
+        $this->buildings = new ArrayCollection();
+    }
 
     /**
      * Get id
@@ -91,32 +94,6 @@ class Characters
     {
         return $this->id;
     }
-
-    /**
-     * Set idPlayer
-     *
-     * @param integer $idPlayer
-     *
-     * @return Characters
-     */
-    public function setIdPlayer($idPlayer)
-    {
-        $this->idPlayer = $idPlayer;
-
-        return $this;
-    }
-
-    /**
-     * Get idPlayer
-     *
-     * @return int
-     */
-    public function getIdPlayer()
-    {
-        return $this->idPlayer;
-    }
-
-    
 
     /**
      * Set pseudo
@@ -145,7 +122,7 @@ class Characters
     /**
      * Set image
      *
-     * @param string $image
+     * @param File $image
      *
      * @return Characters
      */
@@ -159,7 +136,7 @@ class Characters
     /**
      * Get image
      *
-     * @return string
+     * @return File
      */
     public function getImage()
     {
@@ -309,5 +286,77 @@ class Characters
     {
         $this->emplacement = $emplacement;
         return $this;
+    }
+
+    /**
+     * Add building
+     *
+     * @param \AppBundle\Entity\building $building
+     *
+     * @return Characters
+     */
+    public function addBuilding(\AppBundle\Entity\building $building)
+    {
+        $this->buildings[] = $building;
+
+        return $this;
+    }
+
+    /**
+     * Remove building
+     *
+     * @param \AppBundle\Entity\building $building
+     */
+    public function removeBuilding(\AppBundle\Entity\building $building)
+    {
+        $this->buildings->removeElement($building);
+    }
+
+    /**
+     * Add unit
+     *
+     * @param \AppBundle\Entity\units $unit
+     *
+     * @return Characters
+     */
+    public function addUnit(\AppBundle\Entity\units $unit)
+    {
+        $this->units[] = $unit;
+
+        return $this;
+    }
+
+    /**
+     * Remove unit
+     *
+     * @param \AppBundle\Entity\units $unit
+     */
+    public function removeUnit(\AppBundle\Entity\units $unit)
+    {
+        $this->units->removeElement($unit);
+    }
+
+    /**
+     * Add ressource
+     *
+     * @param \AppBundle\Entity\Ressources $ressource
+     *
+     * @return Characters
+     */
+    public function addRessource(\AppBundle\Entity\Ressources $ressource)
+    {
+        $this->ressources[] = $ressource;
+
+        return $this;
+    }
+
+    /**
+     * Remove ressource
+     *
+     * @param \AppBundle\Entity\Ressources $ressource
+     */
+    public function removeRessource(\AppBundle\Entity\Ressources $ressource)
+    {
+        $this->ressources->removeElement($ressource);
     }
 }
