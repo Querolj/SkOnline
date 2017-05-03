@@ -34,6 +34,7 @@ security:
         - { path: ^/carte, roles: ROLE_USER}
         - { path: ^/construction, roles: ROLE_USER}
         - { path: ^/unite, roles: ROLE_USER}
+        - { path: ^/messagerie, roles: ROLE_USER}
             # activate different ways to authenticate
 
             # http_basic: ~
