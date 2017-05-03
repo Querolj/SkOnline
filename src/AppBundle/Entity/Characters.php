@@ -67,6 +67,11 @@ class Characters
     private $ressources;
 
     /**
+     * @ORM\OneToMany(targetEntity="Map", mappedBy="character" )
+     */
+    private $location;
+
+    /**
      * @var int
      * @ORM\Column(name="region", type="integer")
      */
@@ -222,7 +227,7 @@ class Characters
      *
      * @param \AppBundle\Entity\Player $player
      *
-     * @return Characters
+     * @return Map
      */
     public function setPlayer(\AppBundle\Entity\Player $player = null)
     {
@@ -358,5 +363,40 @@ class Characters
     public function removeRessource(\AppBundle\Entity\Ressources $ressource)
     {
         $this->ressources->removeElement($ressource);
+    }
+
+
+    /**
+     * Add location
+     *
+     * @param \AppBundle\Entity\Map $location
+     *
+     * @return Characters
+     */
+    public function addLocation(\AppBundle\Entity\Map $location)
+    {
+        $this->location[] = $location;
+
+        return $this;
+    }
+
+    /**
+     * Remove location
+     *
+     * @param \AppBundle\Entity\Map $location
+     */
+    public function removeLocation(\AppBundle\Entity\Map $location)
+    {
+        $this->location->removeElement($location);
+    }
+
+    /**
+     * Get location
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getLocation()
+    {
+        return $this->location;
     }
 }

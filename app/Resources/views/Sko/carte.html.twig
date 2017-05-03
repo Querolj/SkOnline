@@ -2,7 +2,7 @@
 
 {% block stylesheets %}
 
-<link rel="stylesheet" href="{{ asset('app/Resources/public/style.css') }}" type="text/css" media="screen" />
+<link rel="stylesheet" href="{{ asset('style.css') }}" type="text/css" media="screen" />
 
 {% endblock %}
 
@@ -18,29 +18,18 @@
         </tr>
     </thead>
     <tbody>
-    	<tr>
-        	<td>Stephen C. Cox</td>
-            <td>300</td>
+        {% for location in map %}    
+        <tr>
+            <td>{{ location.emplacement }}</td>
+            <td>{{ location.character.pseudo }}</td>
             <td>
-            	<button id="attaquer">Attaquer</button>
-            	<button id="message">Envoyer un message</button>
+                <button id="attaquer">Attaquer</button>
+                <button id="message">Envoyer un message</button>
             </td>
         </tr>
-        <tr>
-        	<td>Josephin Tan</td>
-            <td>150</td>
-            <td>-</td>
-        </tr>
-        <tr>
-        	<td>Joyce Ming</td>
-            <td>200</td>
-            <td>35</td>
-        </tr>
-        <tr>
-        	<td>James A. Pentel</td>
-            <td>175</td>
-            <td>25</td>
-        </tr>
+
+        {% endfor %}
+
     </tbody>
 </table>
 {% endblock %}
