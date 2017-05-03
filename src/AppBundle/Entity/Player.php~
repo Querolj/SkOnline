@@ -4,14 +4,15 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-
+use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\ORM\EntityRepository;
 /**
  * Player
  *
  * @ORM\Table(name="player")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\PlayerRepository")
  */
-class Player
+class Player extends EntityRepository implements UserInterface, \Serializable
 {
     /**
      * @var int
@@ -20,7 +21,7 @@ class Player
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    protected $id;
 
     /**
      * @var string
@@ -34,14 +35,14 @@ class Player
      *
      * @ORM\Column(name="email", type="string", length=255, unique=true)
      */
-    private $email;
+    protected $email;
 
     /**
      * @var string
      *
      * @ORM\Column(name="password", type="string", length=255)
      */
-    private $password;
+    protected $password;
 
     /**
      * @var \DateTime
@@ -54,6 +55,13 @@ class Player
      * @ORM\OneToMany(targetEntity="Characters", mappedBy="player")
      */
     private $characters;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="salt", type="string", length=255)
+     */
+    protected $salt;
 
     public function __construct(){
         $this->characters = new ArrayCollection();
@@ -210,5 +218,78 @@ class Player
     public function removeCharacter(\AppBundle\Entity\Characters $character)
     {
         $this->characters->removeElement($character);
+    }
+
+    public function getUsername()
+    {
+        return $this->pseudo;
+    }
+
+
+    public function getRoles()
+    {
+        return array('ROLE_USER');
+    }
+
+    public function eraseCredentials()
+    {
+    }
+
+    /** @see \Serializable::serialize() */
+    public function serialize()
+    {
+        return serialize(array(
+            $this->id,
+            $this->pseudo,
+            $this->password,
+            // see section on salt below
+            // $this->salt,
+        ));
+    }
+
+    /** @see \Serializable::unserialize() */
+    public function unserialize($serialized)
+    {
+        list (
+            $this->id,
+            $this->pseudo,
+            $this->password,
+            // see section on salt below
+            // $this->salt
+        ) = unserialize($serialized);
+    }
+
+    /**
+     * Set salt
+     *
+     * @param string $salt
+     *
+     * @return Player
+     */
+    public function setSalt($salt)
+    {
+        $this->salt = $salt;
+
+        return $this;
+    }
+
+    /**
+     * Get salt
+     *
+     * @return string
+     */
+    public function getSalt()
+    {
+        return $this->salt;
+    }
+
+    public function findOneByPseudo($pseudo)
+    {
+        return $this->createQueryBuilder('u')
+        ->andWhere('u.pseudo = :pseudo')
+        ->setParameter('pseudo', $pseudo)
+        ->getQuery()
+        ->getOneOrNullResult()
+        ;
     }
 }

@@ -25,7 +25,13 @@
 {% block body %}
 <br><br><br>
 <p id="coucou"></p>
-<a class="btn btn-default" href="{{ path('createPerso', {'pseudo': pseudo}) }}">Création de personnage</button>
+<a class="btn btn-default" href="{{ path('createPerso', {'pseudo': pseudo}) }}">Création de personnage</a>
+{% for perso in persos %}
+    <p>{{perso.pseudo}}</p>
+    <img src='images/{{perso.image}}' alt="image du personnage">
+
+{% endfor %}
+
 {% endblock %}
 
 {% block javascripts %}

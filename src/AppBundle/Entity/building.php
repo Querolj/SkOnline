@@ -70,6 +70,21 @@ class building
      */
     private $mageSkeletonBuilding;
 
+    /**
+     * @var int
+     * @ORM\ManyToOne(targetEntity="Characters", inversedBy="ressources")
+     * @ORM\JoinColumn(name="id_player", referencedColumnName="id")
+     */
+    private $perso;
+
+    public function __construct(){
+        $this->bonesMine = 1;
+        $this->stoneMine = 1;
+        $this->gemMine = 1;
+        $this->humanPrison = 1;
+        $this->skeletonBarrack = 1;
+        $this->mageSkeletonBuilding = 1;
+    }
 
     /**
      * Get id
@@ -247,5 +262,54 @@ class building
     public function getMageSkeletonBuilding()
     {
         return $this->mageSkeletonBuilding;
+    }
+
+    /**
+     * Set perso
+     *
+     * @param \AppBundle\Entity\Characters $perso
+     *
+     * @return Characters
+     */
+    public function setPerso(\AppBundle\Entity\Characters $perso = null)
+    {
+        $this->perso = $perso;
+
+        return $this;
+    }
+
+    /**
+     * Get perso
+     *
+     * @return \AppBundle\Entity\Characters
+     */
+    public function getPerso()
+    {
+        return $this->perso;
+    }
+
+
+    /**
+     * Add perso
+     *
+     * @param \AppBundle\Entity\Characters $perso
+     *
+     * @return building
+     */
+    public function addPerso(\AppBundle\Entity\Characters $perso)
+    {
+        $this->perso[] = $perso;
+
+        return $this;
+    }
+
+    /**
+     * Remove perso
+     *
+     * @param \AppBundle\Entity\Characters $perso
+     */
+    public function removePerso(\AppBundle\Entity\Characters $perso)
+    {
+        $this->perso->removeElement($perso);
     }
 }

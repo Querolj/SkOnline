@@ -30,59 +30,39 @@ class Characters
      */
     private $player;
 
-    /**
-     * @var int
-     * @ORM\Column(name="id_player", type="integer")
-     */
-    private $idPlayer;
 
     /**
      * @var string
-     *
      * @ORM\Column(name="pseudo", type="string", length=255, unique=true)
      */
     private $pseudo;
 
     /**
-     * Image file
-     *
-     * @var File
-     *
-     * @Assert\File(
-     *     maxSize = "5M",
-     *     mimeTypes = {"image/jpeg", "image/gif", "image/png", "image/tiff"},
-     *     maxSizeMessage = "The maxmimum allowed file size is 5MB.",
-     *     mimeTypesMessage = "Only the filetypes image are allowed."
-     * )
+     * Image
+     * @var string
+     * @ORM\Column(name="image", type="string", length=255, unique=true)
      */
     private $image;
 
     /**
-     * @ORM\OneToMany(targetEntity="building", mappedBy="player")
+     * @ORM\ManyToMany(targetEntity="building", mappedBy="perso")
      */
     private $buildings;
 
     /**
-     * @ORM\OneToMany(targetEntity="units", mappedBy="player")
+     * @ORM\ManyToMany(targetEntity="units", mappedBy="perso")
      */
     private $units;
 
     /**
-     * @ORM\OneToMany(targetEntity="Ressources", mappedBy="player")
+     * @ORM\ManyToMany(targetEntity="Ressources", mappedBy="perso")
      */
     private $ressources;
 
     /**
-     * @var int
-     * @ORM\Column(name="region", type="integer")
+     * @ORM\OneToMany(targetEntity="Map", mappedBy="character" )
      */
-    private $region;
-
-    /**
-     * @var int
-     * @ORM\Column(name="emplacement", type="integer")
-     */
-    private $emplacement;
+    private $location;
 
 
     public function __construct(){
@@ -100,32 +80,6 @@ class Characters
     {
         return $this->id;
     }
-
-    /**
-     * Set idPlayer
-     *
-     * @param integer $idPlayer
-     *
-     * @return Characters
-     */
-    public function setIdPlayer($idPlayer)
-    {
-        $this->idPlayer = $idPlayer;
-
-        return $this;
-    }
-
-    /**
-     * Get idPlayer
-     *
-     * @return int
-     */
-    public function getIdPlayer()
-    {
-        return $this->idPlayer;
-    }
-
-
 
     /**
      * Set pseudo
@@ -154,7 +108,7 @@ class Characters
     /**
      * Set image
      *
-     * @param File $image
+     * @param string $image
      *
      * @return Characters
      */
@@ -168,7 +122,7 @@ class Characters
     /**
      * Get image
      *
-     * @return File
+     * @return string
      */
     public function getImage()
     {
@@ -248,13 +202,35 @@ class Characters
     {
         return $this->ressources;
     }
+    /**
+     * Add ressources
+     *
+     * @param \AppBundle\Entity\Ressources $ressources
+     *
+     * @return Player
+     */
+    public function addCharacter(\AppBundle\Entity\Ressources $ressources)
+    {
+        $this->ressources[] = $ressources;
 
+        return $this;
+    }
+
+    /**
+     * Remove ressources
+     *
+     * @param \AppBundle\Entity\Ressources $ressources
+     */
+    public function removeCharacter(\AppBundle\Entity\Ressources $ressources)
+    {
+        $this->ressources->removeElement($ressources);
+    }
     /**
      * Set player
      *
      * @param \AppBundle\Entity\Player $player
      *
-     * @return Characters
+     * @return Map
      */
     public function setPlayer(\AppBundle\Entity\Player $player = null)
     {
@@ -271,53 +247,6 @@ class Characters
     public function getPlayer()
     {
         return $this->player;
-    }
-
-    /**
-     * Get region
-     *
-     * @return int
-     */
-    public function getRegion()
-    {
-        return $this->region;
-    }
-
-    /**
-     * Set region
-     *
-     * @param int $region
-     *
-     * @return Characters
-     */
-    public function setRegion($region)
-    {
-        $this->region = $region;
-
-        return $this;
-    }
-
-    /**
-     * Get emplacement
-     *
-     * @return int
-     */
-    public function getEmplacement()
-    {
-        return $this->emplacement;
-    }
-
-    /**
-     * Set emplacement
-     *
-     * @param int $emplacement
-     *
-     * @return Characters
-     */
-    public function setEmplacement($emplacement)
-    {
-        $this->emplacement = $emplacement;
-        return $this;
     }
 
     /**
@@ -390,5 +319,40 @@ class Characters
     public function removeRessource(\AppBundle\Entity\Ressources $ressource)
     {
         $this->ressources->removeElement($ressource);
+    }
+
+
+    /**
+     * Add location
+     *
+     * @param \AppBundle\Entity\Map $location
+     *
+     * @return Characters
+     */
+    public function addLocation(\AppBundle\Entity\Map $location)
+    {
+        $this->location[] = $location;
+
+        return $this;
+    }
+
+    /**
+     * Remove location
+     *
+     * @param \AppBundle\Entity\Map $location
+     */
+    public function removeLocation(\AppBundle\Entity\Map $location)
+    {
+        $this->location->removeElement($location);
+    }
+
+    /**
+     * Get location
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getLocation()
+    {
+        return $this->location;
     }
 }

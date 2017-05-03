@@ -5,6 +5,9 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Player;
 use AppBundle\Entity\Map;
 use AppBundle\Entity\Characters;
+use AppBundle\Entity\building;
+use AppBundle\Entity\units;
+use AppBundle\Entity\Ressources;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -134,7 +137,7 @@ class SkOController extends Controller
             $em = $this->getDoctrine()->getManager();
             $em->persist($player); // prépare l'insertion dans la BD
             $em->flush(); // insère dans la BD
-            return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo));
+            return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo, 'persos' => $player->getCharacters()));
         }
         return $this->render('Sko/registration.html.twig', array('form' => $form->createView()));
     }
@@ -155,8 +158,12 @@ class SkOController extends Controller
      */
     public function accueilAction(Request $request)
     {
-        $player = $request->query->get('pseudo');
-        return $this->render('Sko/accueil.html.twig', array('pseudo' => $player));
+        $pseudo = $request->query->get('pseudo');
+        $player = $this->getDoctrine()
+            ->getRepository('AppBundle:Player')
+            ->findOneByPseudo($pseudo);
+        $persos = $player->getCharacters();
+        return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo, 'persos' => $persos));
     }
 
 
@@ -204,9 +211,7 @@ class SkOController extends Controller
         $character = new Characters;
         $form = $this->createFormBuilder($character)
         ->add('pseudo', TextType::class, array('label' => 'Nom du personnage :'))
-        ->add('region', TextType::class, array('label' => 'Région choisie : '))
         ->add('image', FileType::class, array('label' => 'Image : '))
-        ->add('emplacement', TextType::class, array('label' => 'Emplacement choisi : '))
         ->add('creation', SubmitType::class, array('label' => 'Création'))
         ->getForm();
 
@@ -220,9 +225,8 @@ class SkOController extends Controller
                 ->findOneByPseudo($pseudo);
             $idPlayer = $player->getId();
             $name = $form['pseudo']->getData();
-            $region = $form['region']->getData();
             $image = $form['image']->getData();
-            $emplacement = $form['emplacement']->getData();
+            $village = "Village 1";
 
             $file = $character->getImage();
            $fileName = uniqid().'.'.$file->guessExtension();
@@ -230,17 +234,34 @@ class SkOController extends Controller
                $this->getParameter('image_directory'),
                $fileName
            );
+           $character->setPseudo($name);
+           $character->setPlayer($player);
+           $character->setImage($fileName);
+           $em = $this->getDoctrine()->getManager();
+           $em->persist($character); // prépare l'insertion dans la BD
+           $em->flush(); // insère dans la BD
 
-            $character->setPseudo($name);
-            $character->setPlayer($player);
-            $character->setImage($file);
-            $character->setRegion($region);
-            $character->setEmplacement($emplacement);
-
+           // Création des éléments de base du joueur
+           $building = new building;
+           $units = new units;
+           $ressources = new ressources;
+            $building->setPseudo($village);
+            $building->setPerso($character);
             $em = $this->getDoctrine()->getManager();
-            $em->persist($character); // prépare l'insertion dans la BD
-            $em->flush(); // insère dans la BD
-            return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo));
+            $em->persist($building); // prépare l'insertion dans la BD
+            $em->flush();
+
+            $units->setPerso($character);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($units); // prépare l'insertion dans la BD
+            $em->flush();
+
+            $ressources->setPerso($character);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($ressources); // prépare l'insertion dans la BD
+            $em->flush();
+
+            return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo, 'persos' => $player->getCharacters()));
         }
         return $this->render('Sko/createPerso.html.twig', array('form' => $form->createView()));
     }
