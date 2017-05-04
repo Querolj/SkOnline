@@ -52,7 +52,7 @@ class Ressources
     /**
      * @var int
      * @ORM\ManyToOne(targetEntity="Characters", inversedBy="ressources")
-     * @ORM\JoinColumn(name="id_player", referencedColumnName="id")
+     * @ORM\JoinColumn(name="id_perso", referencedColumnName="id")
      */
     private $perso;
 

@@ -44,8 +44,8 @@ class units
 
     /**
      * @var int
-     * @ORM\ManyToOne(targetEntity="Characters", inversedBy="ressources")
-     * @ORM\JoinColumn(name="id_player", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="Characters", inversedBy="units")
+     * @ORM\JoinColumn(name="id_perso", referencedColumnName="id")
      */
     private $perso;
 

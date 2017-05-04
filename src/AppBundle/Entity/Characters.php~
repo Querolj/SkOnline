@@ -45,17 +45,17 @@ class Characters
     private $image;
 
     /**
-     * @ORM\ManyToMany(targetEntity="building", mappedBy="perso")
+     * @ORM\OneToMany(targetEntity="building", mappedBy="perso")
      */
     private $buildings;
 
     /**
-     * @ORM\ManyToMany(targetEntity="units", mappedBy="perso")
+     * @ORM\OneToMany(targetEntity="units", mappedBy="perso")
      */
     private $units;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Ressources", mappedBy="perso")
+     * @ORM\OneToMany(targetEntity="Ressources", mappedBy="perso")
      */
     private $ressources;
 

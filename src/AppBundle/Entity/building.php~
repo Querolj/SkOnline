@@ -72,8 +72,8 @@ class building
 
     /**
      * @var int
-     * @ORM\ManyToMany(targetEntity="Characters", inversedBy="ressources")
-     * @ORM\JoinColumn(name="id_player", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="Characters", inversedBy="building")
+     * @ORM\JoinColumn(name="id_perso", referencedColumnName="id")
      */
     private $perso;
 
@@ -288,4 +288,28 @@ class building
         return $this->perso;
     }
 
+
+    /**
+     * Add perso
+     *
+     * @param \AppBundle\Entity\Characters $perso
+     *
+     * @return building
+     */
+    public function addPerso(\AppBundle\Entity\Characters $perso)
+    {
+        $this->perso[] = $perso;
+
+        return $this;
+    }
+
+    /**
+     * Remove perso
+     *
+     * @param \AppBundle\Entity\Characters $perso
+     */
+    public function removePerso(\AppBundle\Entity\Characters $perso)
+    {
+        $this->perso->removeElement($perso);
+    }
 }

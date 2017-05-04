@@ -15,3 +15,7 @@ h1 {
     display: inline-block;
     color: white;
 }
+img {
+    width: 10%;
+    height: 10%;
+}
