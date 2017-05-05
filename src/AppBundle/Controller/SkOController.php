@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Player;
 use AppBundle\Entity\Map;
 use AppBundle\Entity\Characters;
+use AppBundle\Entity\Message;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -14,9 +15,11 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
 class SkOController extends Controller
 {
@@ -164,19 +167,90 @@ class SkOController extends Controller
      */
     public function carteAction(Request $request)
     {
+
+
+        $player = $this->container->get("security.token_storage")->getToken()->getUser()->getUsername();
         $map = $this->getDoctrine()->getRepository('AppBundle:Map')->findAll();
 
-        dump($request->getUser());
+        $messagerie = new Message();
+        $form = $this->createFormBuilder($messagerie)
+            ->add('message', TextareaType::class, array('label' => 'Message :'))
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+
+
+
+        }
+        /*
+             $.ajax({
+            type: "GET",
+            url: "/carte?action=droite&region={{ region }}",
+            data: {request : "droite"},
+            success: function(data, dataType)
+            {
+                alert("success");
+            },
+
+            error: function(XMLHttpRequest, textStatus, errorThrown)
+            {
+                alert('Error : ' + errorThrown);
+            }
+
+        });
+        */        
+        if ($request->isMethod('GET') && $request->request->has('action')) {
+            dump('AH');
+            $action = $request->query->get('action');
+            $region = $request->query->get('region');
+            dump($action);
+            dump($region);
+            if($action == 'droite')
+                return $this->render('Sko/carte.html.twig', array(
+                    'map' => $map,
+                    'form' => $form->createView(),
+                    'region' => $region + 1
+                    ));
+        }
+        
+        
         return $this->render('Sko/carte.html.twig', array(
-            'map' => $map
+            'map' => $map,
+            'form' => $form->createView(),
+            'region' => 3
             ));
     }
 
-    
+
+    /**
+     * @Route("/messagerie", name="messagerie")
+     */
+    public function messagerieAction(Request $request)
+    {
+        $messagerie = new Message();
+        $form = $this->createFormBuilder($messagerie)
+            ->add('message', TextareaType::class, array('label' => 'Message :'))
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+
+
+        }
+
+
+        return $this->render('Sko/messagerie.html.twig', array(
+                'form' => $form->createView()
+            ));
+    }
 
     /**
      * @Route("/construction", name="construction")
-     * @Security("has_role('ROLE_USER')")
      */
     public function constructionAction(Request $request)
     {
