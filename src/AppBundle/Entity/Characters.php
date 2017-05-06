@@ -3,6 +3,8 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Characters
@@ -28,44 +30,32 @@ class Characters
      */
     private $player;
 
-    /**
-     * @var int
-     * @ORM\Column(name="id_player", type="integer")
-     */
-    private $idPlayer;
 
     /**
      * @var string
-     *
      * @ORM\Column(name="pseudo", type="string", length=255, unique=true)
      */
     private $pseudo;
 
     /**
+     * Image
      * @var string
-     *
-     * @ORM\Column(name="image", type="string", length=255)
+     * @ORM\Column(name="image", type="string", length=255, unique=true)
      */
     private $image;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(name="buildings", type="array")
+     * @ORM\OneToMany(targetEntity="building", mappedBy="perso")
      */
     private $buildings;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(name="units", type="array")
+     * @ORM\OneToMany(targetEntity="units", mappedBy="perso")
      */
     private $units;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(name="ressources", type="array")
+     * @ORM\OneToMany(targetEntity="Ressources", mappedBy="perso")
      */
     private $ressources;
 
@@ -74,8 +64,12 @@ class Characters
      */
     private $location;
 
-    
-    
+
+    public function __construct(){
+        $this->ressources = new ArrayCollection();
+        $this->units = new ArrayCollection();
+        $this->buildings = new ArrayCollection();
+    }
 
     /**
      * Get id
@@ -86,32 +80,6 @@ class Characters
     {
         return $this->id;
     }
-
-    /**
-     * Set idPlayer
-     *
-     * @param integer $idPlayer
-     *
-     * @return Characters
-     */
-    public function setIdPlayer($idPlayer)
-    {
-        $this->idPlayer = $idPlayer;
-
-        return $this;
-    }
-
-    /**
-     * Get idPlayer
-     *
-     * @return int
-     */
-    public function getIdPlayer()
-    {
-        return $this->idPlayer;
-    }
-
-    
 
     /**
      * Set pseudo
@@ -234,7 +202,29 @@ class Characters
     {
         return $this->ressources;
     }
+    /**
+     * Add ressources
+     *
+     * @param \AppBundle\Entity\Ressources $ressources
+     *
+     * @return Player
+     */
+    public function addCharacter(\AppBundle\Entity\Ressources $ressources)
+    {
+        $this->ressources[] = $ressources;
 
+        return $this;
+    }
+
+    /**
+     * Remove ressources
+     *
+     * @param \AppBundle\Entity\Ressources $ressources
+     */
+    public function removeCharacter(\AppBundle\Entity\Ressources $ressources)
+    {
+        $this->ressources->removeElement($ressources);
+    }
     /**
      * Set player
      *
@@ -259,4 +249,110 @@ class Characters
         return $this->player;
     }
 
+    /**
+     * Add building
+     *
+     * @param \AppBundle\Entity\building $building
+     *
+     * @return Characters
+     */
+    public function addBuilding(\AppBundle\Entity\building $building)
+    {
+        $this->buildings[] = $building;
+
+        return $this;
+    }
+
+    /**
+     * Remove building
+     *
+     * @param \AppBundle\Entity\building $building
+     */
+    public function removeBuilding(\AppBundle\Entity\building $building)
+    {
+        $this->buildings->removeElement($building);
+    }
+
+    /**
+     * Add unit
+     *
+     * @param \AppBundle\Entity\units $unit
+     *
+     * @return Characters
+     */
+    public function addUnit(\AppBundle\Entity\units $unit)
+    {
+        $this->units[] = $unit;
+
+        return $this;
+    }
+
+    /**
+     * Remove unit
+     *
+     * @param \AppBundle\Entity\units $unit
+     */
+    public function removeUnit(\AppBundle\Entity\units $unit)
+    {
+        $this->units->removeElement($unit);
+    }
+
+    /**
+     * Add ressource
+     *
+     * @param \AppBundle\Entity\Ressources $ressource
+     *
+     * @return Characters
+     */
+    public function addRessource(\AppBundle\Entity\Ressources $ressource)
+    {
+        $this->ressources[] = $ressource;
+
+        return $this;
+    }
+
+    /**
+     * Remove ressource
+     *
+     * @param \AppBundle\Entity\Ressources $ressource
+     */
+    public function removeRessource(\AppBundle\Entity\Ressources $ressource)
+    {
+        $this->ressources->removeElement($ressource);
+    }
+
+
+    /**
+     * Add location
+     *
+     * @param \AppBundle\Entity\Map $location
+     *
+     * @return Characters
+     */
+    public function addLocation(\AppBundle\Entity\Map $location)
+    {
+        $this->location[] = $location;
+
+        return $this;
+    }
+
+    /**
+     * Remove location
+     *
+     * @param \AppBundle\Entity\Map $location
+     */
+    public function removeLocation(\AppBundle\Entity\Map $location)
+    {
+        $this->location->removeElement($location);
+    }
+
+    /**
+     * Get location
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getLocation()
+    {
+        return $this->location;
+    }
 }

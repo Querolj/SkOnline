@@ -9,13 +9,22 @@
 
 
 {% block body %}
-<div id="message_popup" title="Envoyer un message">
-
-I'm in a dialog
-
+<div id="message_form">
+<p>Envoyer un message : </p>
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}
+<input type="submit" value="Retourner à la carte" 
+    onclick="window.location='/carte';" /> 
 </div>
 
-<table id="box-table-a" summary="Employee Pay Sheet">
+<div id="Map">
+
+<div id="direction">
+    <button id="region_a_gauche"><<<</button>
+    <button id="region_a_droite">>>></button>
+</div>
+<table id="box-table-a">
     <thead>
     	<tr>
         	<th scope="col">Location</th>
@@ -26,9 +35,10 @@ I'm in a dialog
     <tbody>
         {% for location in map %}    
         <tr>
-            <td>{{ location.emplacement }}</td>
+            <td>{{ location.emplacement }}:{{ location.region }}</td>
             <td>{{ location.character.pseudo }}</td>
             <td>
+                {% if location.character.pseudo != "Vide" %}
                 <button class="attaquer" 
                 value="{{ location.emplacement }}"
                 player="{{ location.character.player.pseudo }}"
@@ -38,17 +48,58 @@ I'm in a dialog
                 value="{{ location.emplacement }}"
                 player="{{ location.character.player.pseudo }}"
                 >Envoyer un message</button>
+                {% endif%}
             </td>
         </tr>
-
         {% endfor %}
 
     </tbody>
 </table>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
+
+
 <script>
+    
+    
+
+    {% if app.request.get('to') %}
+        $("#Map").hide();
+        $("#message_form").show();
+    {% else %}
+        $("#message_form").hide();
+        $("#Map").show(); 
+    {% endif %}
+
+    {% if text is defined %}
+
+        var text = "{{ text }}";
+            var sender = "{{ sender }}";
+            var mess_type = "{{ mess_type }}";
+            var to = "{{ to }}";
+
+                $.post('{{ path('send') }}', {text:text, sender:sender, mess_type:mess_type, to:to}, function(data)
+                {
+                    console.log(data);
+                    $('#Map').text(data);
+                });
+            
+            
+
+    {% endif%}    
+
+    $(".message").click(function()
+    {
+        var emplacement = $(this).val();
+        var player_envoie = $(this).attr('player');
+        window.location = '/carte?to=' + player_envoie;
+        $("#message_form").show();
+   
+    });
+
     $(".attaquer").click(function()
     {
         var emplacement = $(this).val();
@@ -58,20 +109,31 @@ I'm in a dialog
         
     });
 
-    $(".message").click(function()
-    {
-        var emplacement = $(this).val();
-        var player_envoie = $(this).attr('player');
-        console.log(emplacement);
-        console.log(player_envoie);
-        if($(document).ready())
+    
+
+    {% if text is not defined %}
+
+        $("#region_a_droite").click(function()
         {
-            jQuery('#message_popup').dialog(); 
-        }
-              
-    });
+            var region = {{ region }};
+            region = region + 1;
+            if(region <= 20)
+                window.location = '/carte?action=droite&region='+region
+            else
+                alert("Il n'y a pas plus de 20 régions");     
+        });
 
+        $("#region_a_gauche").click(function()
+        {
+            var region = {{ region }};
+            region = region - 1;
+            if(region > 0)
+                window.location = '/carte?action=droite&region='+region;   
+            else
+                alert("Il n'y a pas de régions 0");
+                  
+        });
 
+    {% endif %}
 </script>
 {% endblock %}
-

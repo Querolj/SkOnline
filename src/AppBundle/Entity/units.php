@@ -42,7 +42,18 @@ class units
      */
     private $mageSkeleton;
 
+    /**
+     * @var int
+     * @ORM\ManyToOne(targetEntity="Characters", inversedBy="units")
+     * @ORM\JoinColumn(name="id_perso", referencedColumnName="id")
+     */
+    private $perso;
 
+    public function __construct(){
+        $this->skeleton = 3;
+        $this->skeletonWar = 1;
+        $this->mageSkeleton = 0;
+    }
     /**
      * Get id
      *
@@ -123,5 +134,29 @@ class units
     public function getMageSkeleton()
     {
         return $this->mageSkeleton;
+    }
+
+    /**
+     * Set perso
+     *
+     * @param \AppBundle\Entity\Characters $perso
+     *
+     * @return Map
+     */
+    public function setPerso(\AppBundle\Entity\Characters $perso = null)
+    {
+        $this->perso = $perso;
+
+        return $this;
+    }
+
+    /**
+     * Get perso
+     *
+     * @return \AppBundle\Entity\Characters
+     */
+    public function getPerso()
+    {
+        return $this->perso;
     }
 }

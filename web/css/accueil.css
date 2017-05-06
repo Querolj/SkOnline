@@ -1,0 +1,21 @@
+h1, ul.nav {
+    display: block;
+    float: left;
+    margin: auto;
+}
+h1 {
+    color: white;
+}
+.ressources, a#logout{
+    display: block;
+    float: left;
+    margin: 1em;
+}
+.ressources>li {
+    display: inline-block;
+    color: white;
+}
+img {
+    width: 10%;
+    height: 10%;
+}

@@ -1,0 +1,21 @@
+.carousel, #mini_carousel {
+    display: block;
+    float: left;
+}
+h3 {
+    margin-left: 20%;
+}
+#mini_carousel {
+    margin-top: 5%;
+    margin-left: 5%;
+    height: 20%;
+    width: 20%;
+}
+
+.upload {
+    display: block;
+    float: left;
+}
+button.upload {
+    margin: 1em;
+}
