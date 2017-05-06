@@ -6,21 +6,6 @@
 {% endblock %}
 
 {% block menu %}
-{% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-{{ form_start(form) }}
-{{ form_widget(form) }}
-<div class="nav navbar-right">
-	<a id="registration"  class="btn btn-default" href="/registration"><span class="glyphicon glyphicon-user"></span> Inscription</a>
-{{ form_end(form) }}
-</div>
-{% else %}
-<div class="nav navbar-right">
-	<a id="logout"  class="btn btn-default" href="/logout"><span class="glyphicon glyphicon-user"></span> Déconnexion</a>
-</div>
-{% endif %}
-
-
-
 {% endblock %}
 
 {% block body %}

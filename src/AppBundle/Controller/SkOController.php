@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Player;
 use AppBundle\Entity\Map;
 use AppBundle\Entity\Characters;
+use AppBundle\Entity\Message;
 use AppBundle\Entity\building;
 use AppBundle\Entity\units;
 use AppBundle\Entity\Ressources;
@@ -17,10 +18,13 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Component\HttpFoundation\Response;
 
 class SkOController extends Controller
 {
@@ -53,7 +57,7 @@ class SkOController extends Controller
                 $encoded_pass = sha1($form['password']->getData());
                 $date = date_create();
             /*
-                Recherche dans la base de données si les différents éléments entrés
+                Recherche dans la base de donnée    s si les différents éléments entrés
                 sont présents afin de connecter la personne
             */
                 $player = $this->getDoctrine()
@@ -172,19 +176,160 @@ class SkOController extends Controller
      */
     public function carteAction(Request $request)
     {
-        $map = $this->getDoctrine()->getRepository('AppBundle:Map')->findAll();
 
-        dump($request->getUser());
+
+        $player = $this->container->get("security.token_storage")->getToken()->getUser();
+        $message = new Message;
+        //dump($player->getCharacters());
+        
+
+        $form = $this->createFormBuilder($message)
+            ->add('message', TextareaType::class, array('label' => ' ', 
+                'attr' => array(
+                    'style' => 'width: 500px; height: 200px', 
+                    'placeholder' => 'Ecrivez votre message...' )))
+            ->add('envoie', SubmitType::class, array('label' => 'Envoie du message', 
+                'attr' => array(
+                    'id' => 'envoie_message'
+                    )))
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $to = $this->getDoctrine()->getRepository('AppBundle:Player')
+                            ->findOneByPseudo($request->query->get('to'));
+            $map = $this->getDoctrine()->getRepository('AppBundle:Map')->findByRegion(10);
+                return $this->render('Sko/carte.html.twig', array(
+                    'form' => $form->createView(),
+                    'map' => $map,
+                    'text' => $form['message']->getData(),
+                    'sender' => $player->getUsername(),
+                    "mess_type" => "message", 
+                    "to" => $to->getPseudo()
+                    ));
+
+            if($request->query->has('to'))
+            {
+                /*dump("sending...");
+                $message->setMessage($form['message']->getData());
+                $message->setSender($player->getUsername());
+                $message->setVu(false);
+                $message->setDateSend(date_create());
+                $message->setMessType("message");
+                $to = $this->getDoctrine()->getRepository('AppBundle:Player')
+                            ->findOneByPseudo($request->query->get('to'));
+                $id_to = $to->getId();
+                dump($id_to);
+                dump($to);
+                //$message->setIdPlayer($id_to);
+                $message->setPlayer($to);
+                
+                //TODO : get to depuis la database et lui foutre le message
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($message); // prépare l'insertion dans la BD
+                $em->flush();
+                window.location = '/carte?to=' + player_envoie;*/
+            }
+            
+
+
+        }
+        
+        if ($request->isMethod('GET') && $request->query->has('region')) {
+            $action = $request->query->get('action');
+            $region = $request->query->get('region');
+
+            if($action == 'droite' )
+            {
+                $map = $this->getDoctrine()->getRepository('AppBundle:Map')->findByRegion($region);
+                return $this->render('Sko/carte.html.twig', array(
+                    'map' => $map,
+                    'form' => $form->createView(),
+                    'region' => $region
+                    ));
+            }
+            else if($action == 'gauche')
+            {
+                $map = $this->getDoctrine()->getRepository('AppBundle:Map')->findByRegion($region);
+                return $this->render('Sko/carte.html.twig', array(
+                    'map' => $map,
+                    'form' => $form->createView(),
+                    'region' => $region
+                    ));
+
+            }
+        }
+        else
+        {
+            $map = $this->getDoctrine()->getRepository('AppBundle:Map')->findByRegion(10);
+            return $this->render('Sko/carte.html.twig', array(
+                    'map' => $map,
+                    'form' => $form->createView(),
+                    'region' => 10
+                    ));
+        }
+        
+        
         return $this->render('Sko/carte.html.twig', array(
-            'map' => $map
+            'map' => $map,
+            'form' => $form->createView(),
+            'region' => 3
+            ));
+    }
+
+    /**
+     * @Route("/send", name="send")
+     */
+    public function send(Request $request)
+    {
+        $message = new Message();
+        $mess_type = $request->request->get('mess_type');
+        $text = $request->request->get('text');
+        $sender = $request->request->get('sender');
+        $to = $request->request->get('to');
+        $player = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findOneByPseudo($to);
+
+        $message->setMessage($text);
+        $message->setMessType($mess_type);
+        $message->setSender($sender);
+        $message->setDateSend(date_create());
+        $message->setPlayer($player);
+        $message->setVu(false);
+        dump($message);
+        $em = $this->getDoctrine()->getManager();
+                $em->persist($message); // prépare l'insertion dans la BD
+                $em->flush();
+
+        return new Response('send');
+    }
+
+    /**
+     * @Route("/messagerie", name="messagerie")
+     */
+    public function messagerieAction(Request $request)
+    {
+        $pseudo = $this->container->get("security.token_storage")->getToken()->getUser()->getUsername();
+
+        $player = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findOneByPseudo($pseudo);
+        
+        $messages = $this->getDoctrine()
+                ->getRepository('AppBundle:Message')
+                ->findByPlayer($player->getId());
+        dump($messages[0]);    
+        return $this->render('Sko/messagerie.html.twig', array(
+            'messages' => $messages
             ));
     }
 
 
-
     /**
      * @Route("/construction", name="construction")
-     * @Security("has_role('ROLE_USER')")
      */
     public function constructionAction(Request $request)
     {

@@ -57,6 +57,11 @@ class Player extends EntityRepository implements UserInterface, \Serializable
     private $characters;
 
     /**
+     * @ORM\OneToMany(targetEntity="Message", mappedBy="player")
+     */
+    private $messages;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="salt", type="string", length=255)

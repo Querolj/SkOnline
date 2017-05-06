@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div id="display_messages">
+        {% for message in messages%}
+            <p>________________________________________________________________________</p>
+            <h2>Envoyé le {{ message.datesend |date("m/d/Y") }} à  {{ message.datesend |date("g:i") }} par {{ message.sender }} :</h2>
+            <p>{{ message.message }}</p>
+
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+{% endblock %}
