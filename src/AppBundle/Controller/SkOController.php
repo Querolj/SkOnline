@@ -275,39 +275,29 @@ class SkOController extends Controller
 
             ));
     }
-    // /**
-    //  * @Route("/ressource_new", name="ressource_new")
-    //  */
-    // public function newRessource(Request $request){
-    //     if ($request->isXMLHttpRequest()) {
-    //         $content = $request->getContent();
-    //         if (!empty($content)) {
-    //             $params = json_decode($content, true);
-    //             $new = new timeEntry;
-    //             $new->setDescription($params['description']);
-    //             $new->setLocation($params['location']);
-    //             $new->setSubject($params['subject']);
-    //             $new->setAllDay($params['allDay']);
-    //             $new->setEndTime(new \DateTime($params['endTime']));
-    //             $new->setStartTime(new \DateTime($params['startTime']));
-    //
-    //             $em = $this->getDoctrine()->getManager();
-    //             $calendar = $em->getRepository('AppBundle:calendar')
-    //                 ->findOneBy(['id' => 1]);
-    //
-    //             $offers = $em->getRepository('AppBundle:offer')
-    //                 ->findOneBy(['id' => 1]);
-    //
-    //             $new->setCalendar($calendar);
-    //             $new->setOffer($offers);
-    //             $new->setStatus('Open');
-    //             $new->setUser($this->getUser());
-    //
-    //             $em->persist($new);
-    //             $em->flush();
-    //         }
-    //         return new JsonResponse(array('data' => $params));
-    //     }
-    //     return new Response('Error!', 400);
-    // }
+    /**
+     * @Route("/ressource_new", name="ressource_new")
+     */
+    public function newRessource(Request $request){
+        if ($request->isXMLHttpRequest()) {
+            $content = $request->getContent();
+            if (!empty($content)) {
+                $params = json_decode($content, true);
+                $ressource = new Ressources;
+                $ressource->setOs($params['ressource'].getOs());
+                $ressource->setPierre($params['ressource'].getPierre());
+                $ressource->setMetal($params['ressource'].getMetal());
+
+                $em = $this->getDoctrine()->getManager();
+                $perso = $em->getRepository('AppBundle:Characters')
+                    ->findOneBy(['pseudo' => $params['pseudo']]);
+
+                $perso->setRessources($ressource);
+                $em->persist($perso);
+                $em->flush();
+            }
+            return new JsonResponse(array('data' => $params));
+        }
+        return new Response('Error!', 400);
+    }
 }
