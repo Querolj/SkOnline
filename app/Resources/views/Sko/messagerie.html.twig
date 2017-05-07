@@ -4,8 +4,9 @@
     <div id="display_messages">
         {% for message in messages%}
             <p>________________________________________________________________________</p>
-            <h2>Envoyé le {{ message.datesend |date("m/d/Y") }} à  {{ message.datesend |date("g:i") }} par {{ message.sender }} :</h2>
+            <h2>Envoyé le {{ message.datesend |date("m/d/Y") }} à  {{ message.datesend |date("h:ia") }} par {{ message.sender }} :</h2>
             <p>{{ message.message }}</p>
+            <input type="submit" value="Répondre à {{ message.sender }}" onclick="window.location='/carte?to={{ message.sender }}';" />
 
         {% endfor %}
     </div>
