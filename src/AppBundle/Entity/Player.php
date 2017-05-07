@@ -71,7 +71,7 @@ class Player extends EntityRepository implements UserInterface, \Serializable
     /**
      * @var string
      *
-     * @ORM\Column(name="current_char", type="string", length=255)
+     * @ORM\Column(name="current_char", type="string", length=255, nullable = true)
      */
     private $current_char;
 

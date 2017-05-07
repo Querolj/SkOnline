@@ -9,6 +9,7 @@ use AppBundle\Entity\Message;
 use AppBundle\Entity\building;
 use AppBundle\Entity\units;
 use AppBundle\Entity\Ressources;
+use AppBundle\Entity\AttackLog;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -196,7 +197,9 @@ class SkOController extends Controller
 
 
         $message = new Message;
-        //dump($player->getCharacters());
+        //$units = $current_char->getUnits();
+
+        //dump($units->getSkeleton());
 
 
         $form = $this->createFormBuilder($message)
@@ -240,7 +243,8 @@ class SkOController extends Controller
                 return $this->render('Sko/carte.html.twig', array(
                     'map' => $map,
                     'form' => $form->createView(),
-                    'region' => $region
+                    'region' => $region,
+                    "current_char" => $current_char
                     ));
             }
             else if($action == 'gauche')
@@ -249,7 +253,8 @@ class SkOController extends Controller
                 return $this->render('Sko/carte.html.twig', array(
                     'map' => $map,
                     'form' => $form->createView(),
-                    'region' => $region
+                    'region' => $region,
+                    "current_char" => $current_char
                     ));
 
             }
@@ -260,7 +265,8 @@ class SkOController extends Controller
             return $this->render('Sko/carte.html.twig', array(
                     'map' => $map,
                     'form' => $form->createView(),
-                    'region' => 10
+                    'region' => 10,
+                    "current_char" => $current_char
                     ));
         }
 
@@ -268,7 +274,8 @@ class SkOController extends Controller
         return $this->render('Sko/carte.html.twig', array(
             'map' => $map,
             'form' => $form->createView(),
-            'region' => 3
+            'region' => 3,
+            "current_char" => $current_char
             ));
     }
 
@@ -325,6 +332,34 @@ class SkOController extends Controller
 
 
         return new Response('');
+    }
+
+    /**
+     * @Route("/GOGOAttack", name="GOGOAttack")
+     */
+    public function GOGOAttack(Request $request)
+    {
+        $current_char_pseudo = $request->request->get('current_char_pseudo');
+        $character_to_attack_pseudo = $request->request->get('character_to_attack_pseudo');
+        $character_to_attack = $this->getDoctrine()
+                ->getRepository('AppBundle:Characters')
+                ->findOneByPseudo($character_to_attack_pseudo);
+        $current_char = $this->getDoctrine()
+                ->getRepository('AppBundle:Characters')
+                ->findOneByPseudo($current_char_pseudo);
+        $attack_log = new AttackLog;
+        $attack_log->setStartingTime(date_create());
+        $travel_time = abs($character_to_attack->getLocation()[0]->getRegion() - $current_char->getLocation()[0]->getRegion())*10 + abs($character_to_attack->getLocation()[0]->getEmplacement() - $current_char->getLocation()[0]->getEmplacement())*5;
+        echo $travel_time;
+        echo "  ";
+        echo $attack_log->getStartingTime()->format('Y-m-d H:i:s');
+        $travel_time_date = $attack_log->getStartingTime()->add(new \DateInterval("PT{$travel_time}S"));
+        echo $travel_time_date->format('Y-m-d H:i:s');
+
+        
+
+
+        return new Response('send');
     }
 
     /**
@@ -444,6 +479,16 @@ class SkOController extends Controller
             ->getRepository('AppBundle:Characters')
             ->findOneByPseudo($pseudo);
         $player = $this->container->get("security.token_storage")->getToken()->getUser();
+        $player->setCurrentChar($pseudo);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($player);
+        $em->flush();
+
+        $token = new UsernamePasswordToken($player, $player->getPassword(), "main", $player->getRoles());  
+        $event = new InteractiveLoginEvent(new Request(), $token);
+        $this->container->get("event_dispatcher")->dispatch("security.interactive_login", $event);
+        $this->container->get("security.token_storage")->setToken($token);
+
         return $this->render('Sko/unite.html.twig', array('pseudo' => $player->getPseudo(),'perso' => $perso));
     }
 
@@ -481,9 +526,16 @@ class SkOController extends Controller
            $character->setPseudo($name);
            $character->setPlayer($player);
            $character->setImage($fileName);
+           $player->setCurrentChar($name);
            $em = $this->getDoctrine()->getManager();
            $em->persist($character); // prépare l'insertion dans la BD
+           $em->persist($player);
            $em->flush(); // insère dans la BD
+
+           $token = new UsernamePasswordToken($player, $player->getPassword(), "main", $player->getRoles());  
+            $event = new InteractiveLoginEvent(new Request(), $token);
+            $this->container->get("event_dispatcher")->dispatch("security.interactive_login", $event);
+            $this->container->get("security.token_storage")->setToken($token);
 
            // Création des éléments de base du joueur
            $building = new building;

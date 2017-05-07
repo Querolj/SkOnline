@@ -19,6 +19,16 @@
 </div>
 
 <div id="attack_form">
+    <p>Vous avez {{ current_char.units[0].skeleton }} squelettes.</p>
+    <input type="number" step="1" value="0" min="0" max="{{ current_char.units[0].skeleton }}"/>
+    <p>Vous avez {{ current_char.units[0].skeletonWar }} guerriers squelettes.</p>
+    <input type="number" step="1" value="0" min="0" max="{{ current_char.units[0].skeletonWar }}"/>
+    <p>Vous avez {{ current_char.units[0].mageSkeleton }} squelettes mages.</p>
+    <input type="number" step="1" value="0" min="0" max="{{ current_char.units[0].mageSkeleton }}"/>
+
+    <button id="attack_go">ATTAQUER.</button>
+    <input type="submit" value="Retourner à la carte" 
+    onclick="window.location='/carte';" /> 
 
 </div>
 <div id="Map">
@@ -44,7 +54,7 @@
                 <td>
                     <button class="attaquer" 
                     value="{{ location.emplacement }}"
-                    player="{{ location.character.player.pseudo }}"
+                    player="{{ location.character.pseudo }}"
                      >Attaquer {{ location.character.pseudo }}</button>
 
                     <button class="message"
@@ -70,12 +80,31 @@
 
 
 <script>
-    
+
+    var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+    };
     
 
     {% if app.request.get('to') %}
         $("#Map").hide();
+        $("#attack_form").hide();
         $("#message_form").show();
+    {% elseif app.request.get('atk')%}
+        $("#Map").hide();
+        $("#attack_form").show();
+        $("#message_form").hide();
     {% else %}
         $("#message_form").hide();
         $("#Map").show(); 
@@ -84,17 +113,15 @@
     {% if text is defined %}
 
         var text = "{{ text }}";
-            var sender = "{{ sender }}";
-            var mess_type = "{{ mess_type }}";
-            var to = "{{ to }}";
+        var sender = "{{ sender }}";
+        var mess_type = "{{ mess_type }}";
+        var to = "{{ to }}";
 
-            $.post('{{ path('send') }}', {text:text, sender:sender, mess_type:mess_type, to:to}, function(data)
-            {
-                $("#message_form").hide();
-                $('#Map').show();
-            });
-            
-            
+       $.post('{{ path('send') }}', {text:text, sender:sender, mess_type:mess_type, to:to}, function(data)
+        {
+            $("#message_form").hide();
+            $('#Map').show();
+        });      
 
     {% endif%}    
 
@@ -110,10 +137,24 @@
     $(".attaquer").click(function()
     {
         var emplacement = $(this).val();
-        var player_a_attaquer = $(this).attr('player');
+        var character_to_attack = $(this).attr('player');
         console.log(emplacement);
-        console.log(player_a_attaquer);
-        
+        console.log(character_to_attack);
+        window.location = '/carte?atk=' + character_to_attack;
+        $("#attack_form").show();
+    });
+
+    $("#attack_go").click(function()
+    {
+        var character_to_attack_pseudo = getUrlParameter('atk');
+        console.log("{{ current_char.pseudo }}");
+
+        $.post('{{ path('GOGOAttack') }}', {character_to_attack_pseudo:character_to_attack_pseudo, current_char_pseudo:"{{ current_char.pseudo }}" }, function(data)
+        {
+            console.log(data);
+
+        });   
+
     });
 
     

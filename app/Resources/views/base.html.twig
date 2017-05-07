@@ -72,12 +72,12 @@
 </br>
 </br>
 {% block body %}{% endblock %}
-{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+{% if is_granted('IS_AUTHENTICATED_FULLY') and app.user.currentchar is defined%}
 <script>
   function increment(compteur) {
         window.setInterval(
         function () {
-            console.log(compteur);
+            //console.log(compteur);
             compteur += 1;
             document.getElementById("attack_badge").innerHTML = compteur;
             if(compteur % 5==0)
