@@ -64,6 +64,16 @@ class Characters
      */
     private $location;
 
+    /**
+     * @ORM\OneToMany(targetEntity="AttackLog", mappedBy="attacker" )
+     */
+    private $attacker_log;
+
+    /**
+     * @ORM\OneToMany(targetEntity="AttackLog", mappedBy="defender" )
+     */
+    private $defender_log;
+
 
     public function __construct(){
         $this->ressources = new ArrayCollection();
@@ -202,29 +212,7 @@ class Characters
     {
         return $this->ressources;
     }
-    /**
-     * Add ressources
-     *
-     * @param \AppBundle\Entity\Ressources $ressources
-     *
-     * @return Player
-     */
-    public function addCharacter(\AppBundle\Entity\Ressources $ressources)
-    {
-        $this->ressources[] = $ressources;
 
-        return $this;
-    }
-
-    /**
-     * Remove ressources
-     *
-     * @param \AppBundle\Entity\Ressources $ressources
-     */
-    public function removeCharacter(\AppBundle\Entity\Ressources $ressources)
-    {
-        $this->ressources->removeElement($ressources);
-    }
     /**
      * Set player
      *
@@ -354,5 +342,100 @@ class Characters
     public function getLocation()
     {
         return $this->location;
+    }
+
+    /**
+     * Get attacker_log
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAttackerLog()
+    {
+        return $this->attacker_log;
+    }
+
+    /**
+     * Set AttackLog
+     *
+     * @param array $attack_log
+     *
+     * @return AttackLog
+     */
+    public function setAttackLog($attack_log)
+    {
+        $this->attack_log = $attack_log;
+
+        return $this;
+    }
+
+    /**
+     * Get defender_log
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getDefenderLog()
+    {
+        return $this->defender_log;
+    }
+
+    /**
+     * Set AttackLog
+     *
+     * @param array $defender_log
+     *
+     * @return AttackLog
+     */
+    public function setDefenderLog($defender_log)
+    {
+        $this->defender_log = $defender_log;
+        return $this;
+    }
+
+    /**
+     * Add attackerLog
+     *
+     * @param \AppBundle\Entity\AttackLog $attackerLog
+     *
+     * @return Characters
+     */
+    public function addAttackerLog(\AppBundle\Entity\AttackLog $attackerLog)
+    {
+        $this->attacker_log[] = $attackerLog;
+
+        return $this;
+    }
+
+    /**
+     * Remove attackerLog
+     *
+     * @param \AppBundle\Entity\AttackLog $attackerLog
+     */
+    public function removeAttackerLog(\AppBundle\Entity\AttackLog $attackerLog)
+    {
+        $this->attacker_log->removeElement($attackerLog);
+    }
+
+    /**
+     * Add defenderLog
+     *
+     * @param \AppBundle\Entity\AttackLog $defenderLog
+     *
+     * @return Characters
+     */
+    public function addDefenderLog(\AppBundle\Entity\AttackLog $defenderLog)
+    {
+        $this->defender_log[] = $defenderLog;
+
+        return $this;
+    }
+
+    /**
+     * Remove defenderLog
+     *
+     * @param \AppBundle\Entity\AttackLog $defenderLog
+     */
+    public function removeDefenderLog(\AppBundle\Entity\AttackLog $defenderLog)
+    {
+        $this->defender_log->removeElement($defenderLog);
     }
 }

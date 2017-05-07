@@ -1,0 +1,14 @@
+.boutons, .perso {
+    display: block;
+    float: left;
+    margin: 2%;
+}
+img{
+    align-self: center;
+    width: 20%;
+    height: 20%;
+}
+#os,#pierre,#metal,#human {
+    color: white;
+    margin: 0.8em;
+}

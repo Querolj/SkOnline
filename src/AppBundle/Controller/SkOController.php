@@ -25,6 +25,7 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class SkOController extends Controller
 {
@@ -181,14 +182,14 @@ class SkOController extends Controller
         $player = $this->container->get("security.token_storage")->getToken()->getUser();
         $message = new Message;
         //dump($player->getCharacters());
-        
+
 
         $form = $this->createFormBuilder($message)
-            ->add('message', TextareaType::class, array('label' => ' ', 
+            ->add('message', TextareaType::class, array('label' => ' ',
                 'attr' => array(
-                    'style' => 'width: 500px; height: 200px', 
+                    'style' => 'width: 500px; height: 200px',
                     'placeholder' => 'Ecrivez votre message...' )))
-            ->add('envoie', SubmitType::class, array('label' => 'Envoie du message', 
+            ->add('envoie', SubmitType::class, array('label' => 'Envoie du message',
                 'attr' => array(
                     'id' => 'envoie_message'
                     )))
@@ -206,7 +207,7 @@ class SkOController extends Controller
                     'map' => $map,
                     'text' => $form['message']->getData(),
                     'sender' => $player->getUsername(),
-                    "mess_type" => "message", 
+                    "mess_type" => "message",
                     "to" => $to->getPseudo()
                     ));
 
@@ -225,18 +226,18 @@ class SkOController extends Controller
                 dump($to);
                 //$message->setIdPlayer($id_to);
                 $message->setPlayer($to);
-                
+
                 //TODO : get to depuis la database et lui foutre le message
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($message); // prépare l'insertion dans la BD
                 $em->flush();
                 window.location = '/carte?to=' + player_envoie;*/
             }
-            
+
 
 
         }
-        
+
         if ($request->isMethod('GET') && $request->query->has('region')) {
             $action = $request->query->get('action');
             $region = $request->query->get('region');
@@ -270,8 +271,8 @@ class SkOController extends Controller
                     'region' => 10
                     ));
         }
-        
-        
+
+
         return $this->render('Sko/carte.html.twig', array(
             'map' => $map,
             'form' => $form->createView(),
@@ -314,7 +315,7 @@ class SkOController extends Controller
     {
         //Vérifier le log de l'user et comparer à date_create()
         $pseudo = $request->request->get('player');
-                                    
+
         $current_char = $this->getDoctrine()
                 ->getRepository('AppBundle:Characters')
                 ->findOneByPseudo($pseudo);
@@ -344,8 +345,11 @@ class SkOController extends Controller
         $player = $this->getDoctrine()
                 ->getRepository('AppBundle:Player')
                 ->findOneByPseudo($pseudo);
-        
-        $messages = $player->getMessages();
+
+        $messages = $this->getDoctrine()
+                ->getRepository('AppBundle:Message')
+                ->findByPlayer($player->getId());
+        dump($messages[0]);
 
         return $this->render('Sko/messagerie.html.twig', array(
             'messages' => $messages
@@ -424,7 +428,7 @@ class SkOController extends Controller
             return $this->render('Sko/attack_log.html.twig', array(
             ));
         }
-        
+
     }
 
     /**
@@ -442,9 +446,12 @@ class SkOController extends Controller
      */
     public function uniteAction(Request $request)
     {
-        return $this->render('Sko/unite.html.twig', array(
-
-            ));
+        $pseudo = $request->query->get('perso');
+        $pseudoPlayer = $request->query->get('pseudo');
+        $perso = $this->getDoctrine()
+            ->getRepository('AppBundle:Characters')
+            ->findOneByPseudo($pseudo);
+        return $this->render('Sko/unite.html.twig', array('pseudo' => $pseudoPlayer,'perso' => $perso));
     }
 
     /**
@@ -519,41 +526,192 @@ class SkOController extends Controller
 
             ));
     }
-    // /**
-    //  * @Route("/ressource_new", name="ressource_new")
-    //  */
-    // public function newRessource(Request $request){
-    //     if ($request->isXMLHttpRequest()) {
-    //         $content = $request->getContent();
-    //         if (!empty($content)) {
-    //             $params = json_decode($content, true);
-    //             $new = new timeEntry;
-    //             $new->setDescription($params['description']);
-    //             $new->setLocation($params['location']);
-    //             $new->setSubject($params['subject']);
-    //             $new->setAllDay($params['allDay']);
-    //             $new->setEndTime(new \DateTime($params['endTime']));
-    //             $new->setStartTime(new \DateTime($params['startTime']));
-    //
-    //             $em = $this->getDoctrine()->getManager();
-    //             $calendar = $em->getRepository('AppBundle:calendar')
-    //                 ->findOneBy(['id' => 1]);
-    //
-    //             $offers = $em->getRepository('AppBundle:offer')
-    //                 ->findOneBy(['id' => 1]);
-    //
-    //             $new->setCalendar($calendar);
-    //             $new->setOffer($offers);
-    //             $new->setStatus('Open');
-    //             $new->setUser($this->getUser());
-    //
-    //             $em->persist($new);
-    //             $em->flush();
-    //         }
-    //         return new JsonResponse(array('data' => $params));
-    //     }
-    //     return new Response('Error!', 400);
-    // }
+    /**
+     * @Route("/save", name="save")
+     */
+    public function saveAction(Request $request){
+        if ($request->isXMLHttpRequest()) {
+            $content = $request->getContent();
+            if (!empty($content)) {
+
+                $params = json_decode($content, true);
+                $perso = $this->getDoctrine()
+                    ->getRepository('AppBundle:Characters')
+                    ->findOneByPseudo($params['perso']);
+
+                $ressource = $this->getDoctrine()
+                    ->getRepository('AppBundle:Ressources')
+                    ->findOneByPerso($perso);
+                $ressource->setOs($params['ressources']['os']);
+                $ressource->setPierre($params['ressources']['pierre']);
+                $ressource->setMetal($params['ressources']['metal']);
+                $ressource->setHuman($params['ressources']['human']);
+
+
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($ressource);
+                $em->flush();
+            }
+            return new JsonResponse(array('data' =>$params));
+        }
+        return new Response('Error!', 400);
+    }
+    /**
+     * @Route("/actionB", name="actionBuilding")
+     */
+    public function buildingAction(Request $request)
+    {
+        $pseudo = $request->query->get('pseudo');
+        $modif = $request->query->get('ressource');
+        $perso = $this->getDoctrine()
+            ->getRepository('AppBundle:Characters')
+            ->findOneByPseudo($pseudo);
+
+        $ressource = $this->getDoctrine()
+                ->getRepository('AppBundle:Ressources')
+                ->findOneByPerso($perso);
+        $building = $this->getDoctrine()
+                ->getRepository('AppBundle:building')
+                ->findOneByPerso($perso);
+        switch ($modif) {
+            case 'os':
+                $os = $ressource->getOs();
+                $pierre = $ressource->getPierre();
+                if ($os >= 20 && $pierre >= 40) {
+                    $ressource->setOs($os-20);
+                    $ressource->setPierre($pierre-40);
+                    $building->setBonesMine($building->getBonesMine()+1);
+                }
+                break;
+
+            case 'pierre':
+                $os = $ressource->getOs();
+                $pierre = $ressource->getPierre();
+                if ($os >= 40 && $pierre >= 20) {
+                    $ressource->setOs($os-40);
+                    $ressource->setPierre($pierre-20);
+                    $building->setStoneMine($building->getStoneMine()+1);
+                }
+                break;
+
+            case 'métal':
+                $os = $ressource->getOs();
+                $pierre = $ressource->getPierre();
+                $metal = $ressource->getMetal();
+                if ($os >= 50 && $pierre >= 50 && $metal >= 40) {
+                    $ressource->setOs($os-50);
+                    $ressource->setPierre($pierre-50);
+                    $ressource->setMetal($metal-40);
+                    $building->setGemMine($building->getGemMine()+1);
+                }
+                break;
+
+            case 'humain':
+                $os = $ressource->getOs();
+                $pierre = $ressource->getPierre();
+                $metal = $ressource->getMetal();
+                if ($os >= 100 && $pierre >= 100 && $metal >= 50) {
+                    $ressource->setOs($os-100);
+                    $ressource->setPierre($pierre-100);
+                    $ressource->setMetal($metal-50);
+                    $building->setHumanPrison($building->getHumanPrison()+1);
+                }
+                break;
+
+            case 'squelette':
+                $os = $ressource->getOs();
+                $pierre = $ressource->getPierre();
+                $metal = $ressource->getMetal();
+                if ($os >= 200 && $pierre >= 200 && $metal >= 100) {
+                    $ressource->setOs($os-200);
+                    $ressource->setPierre($pierre-200);
+                    $ressource->setMetal($metal-100);
+                    $building->setSkeletonBarrack($building->getSkeletonBarrack()+1);
+                }
+                break;
+
+            case 'mage':
+                $os = $ressource->getOs();
+                $pierre = $ressource->getPierre();
+                $metal = $ressource->getMetal();
+                if ($os >= 200 && $pierre >= 200 && $metal >= 100) {
+                    $ressource->setOs($os-200);
+                    $ressource->setPierre($pierre-200);
+                    $ressource->setMetal($metal-100);
+                    $building->setMageSkeletonBuilding($building->getMageSkeletonBuilding()+1);
+                }
+                break;
+
+            default:
+                break;
+        }
+        $building->setPerso($perso);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($building);
+        $em->flush();
+        return $this->render('Sko/unite.html.twig', array('perso' => $perso));
+    }
+    /**
+     * @Route("/actionU", name="actionUnite")
+     */
+    public function newUniteAction(Request $request)
+    {
+        $pseudo = $request->query->get('pseudo');
+        $modif = $request->query->get('ressource');
+        $perso = $this->getDoctrine()
+            ->getRepository('AppBundle:Characters')
+            ->findOneByPseudo($pseudo);
+        $ressource = $this->getDoctrine()
+                ->getRepository('AppBundle:Ressources')
+                ->findOneByPerso($perso);
+        $units = $this->getDoctrine()
+                ->getRepository('AppBundle:units')
+                ->findOneByPerso($perso);
+        switch ($modif) {
+            case 'squelette':
+                $os = $ressource->getOs();
+                $human = $ressource->getHuman();
+                if ($os >= 60 && $human > 1) {
+                    $ressource->setOs($os-60);
+                    $ressource->setHuman($human-1);
+                    $units->setSkeleton($units->getSkeleton()+1);
+                }
+                break;
+
+            case 'war':
+                $os = $ressource->getOs();
+                $metal = $ressource->getMetal();
+                $human = $ressource->getHuman();
+                if ($os >= 60 && $metal >= 10 && $human > 1) {
+                    $ressource->setOs($os-60);
+                    $ressource->setMetal($metal-10);
+                    $ressource->setHuman($human-1);
+                    $units->setSkeletonWar($units->getSkeletonWar()+1);
+                }
+                break;
+
+            case 'mage':
+                $os = $ressource->getOs();
+                $metal = $ressource->getMetal();
+                $human = $ressource->getHuman();
+                if ($os >= 180 && $metal >= 30 && $human > 3) {
+                    $ressource->setOs($os-180);
+                    $ressource->setMetal($metal-30);
+                    $ressource->setHuman($human-3);
+                    $units->setMageSkeleton($units->getMageSkeleton()+1);
+                }
+                break;
+
+            default:
+                break;
+        }
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($units);
+        $em->persist($ressource);
+        $em->flush();
+        return $this->render('Sko/unite.html.twig', array('perso' => $perso));
+    }
+
 
     /**
      * @Route("/initMap", name="initMap")
@@ -581,9 +739,9 @@ class SkOController extends Controller
             $em = $this->getDoctrine()->getManager();
             $location = new Map();
 
-            for ($r = 1; $r <= 20; $r++) 
+            for ($r = 1; $r <= 20; $r++)
             {
-                for ($e = 1; $e <= 10; $e++) 
+                for ($e = 1; $e <= 10; $e++)
                 {
                     $location = new Map();
                     $location->setEmplacement($e);
@@ -599,9 +757,9 @@ class SkOController extends Controller
             $em->flush();
             return new Response('La map vient d\'etre initialisé.');
         }
-        
 
-        
+
+
     }
 
 }

@@ -328,4 +328,49 @@ class Player extends EntityRepository implements UserInterface, \Serializable
     {
         return $this->current_char;
     }
+
+
+    public function findOneByCurrentChar($pseudo)
+    {
+        return $this->createQueryBuilder('u')
+        ->andWhere('u.current_char = :current_char')
+        ->setParameter('current_char', $current_char)
+        ->getQuery()
+        ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * Add message
+     *
+     * @param \AppBundle\Entity\Message $message
+     *
+     * @return Player
+     */
+    public function addMessage(\AppBundle\Entity\Message $message)
+    {
+        $this->messages[] = $message;
+
+        return $this;
+    }
+
+    /**
+     * Remove message
+     *
+     * @param \AppBundle\Entity\Message $message
+     */
+    public function removeMessage(\AppBundle\Entity\Message $message)
+    {
+        $this->messages->removeElement($message);
+    }
+
+    /**
+     * Get messages
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getMessages()
+    {
+        return $this->messages;
+    }
 }
