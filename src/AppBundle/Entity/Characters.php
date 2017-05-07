@@ -64,6 +64,16 @@ class Characters
      */
     private $location;
 
+    /**
+     * @ORM\OneToMany(targetEntity="AttackLog", mappedBy="attacker" )
+     */
+    private $attacker_log;
+
+    /**
+     * @ORM\OneToMany(targetEntity="AttackLog", mappedBy="defender" )
+     */
+    private $defender_log;
+
 
     public function __construct(){
         $this->ressources = new ArrayCollection();
@@ -354,5 +364,52 @@ class Characters
     public function getLocation()
     {
         return $this->location;
+    }
+
+    /**
+     * Get attacker_log
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAttackerLog()
+    {
+        return $this->attacker_log;
+    }
+
+    /**
+     * Set AttackLog
+     *
+     * @param array $attack_log
+     *
+     * @return AttackLog
+     */
+    public function setAttackLog($attack_log)
+    {
+        $this->attack_log = $attack_log;
+
+        return $this;
+    }
+
+    /**
+     * Get defender_log
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getDefenderLog()
+    {
+        return $this->defender_log;
+    }
+
+    /**
+     * Set AttackLog
+     *
+     * @param array $defender_log
+     *
+     * @return AttackLog
+     */
+    public function setDefenderLog($defender_log)
+    {
+        $this->defender_log = $defender_log;
+        return $this;
     }
 }
