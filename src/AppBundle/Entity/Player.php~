@@ -57,11 +57,23 @@ class Player extends EntityRepository implements UserInterface, \Serializable
     private $characters;
 
     /**
+     * @ORM\OneToMany(targetEntity="Message", mappedBy="player")
+     */
+    private $messages;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="salt", type="string", length=255)
      */
     protected $salt;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="current_char", type="string", length=255)
+     */
+    private $current_char;
 
     public function __construct(){
         $this->characters = new ArrayCollection();
@@ -291,5 +303,29 @@ class Player extends EntityRepository implements UserInterface, \Serializable
         ->getQuery()
         ->getOneOrNullResult()
         ;
+    }
+
+    /**
+     * Set current_char
+     *
+     * @param string $current_char
+     *
+     * @return Player
+     */
+    public function setCurrentChar($current_char)
+    {
+        $this->current_char = $current_char;
+
+        return $this;
+    }
+
+    /**
+     * Get current_char
+     *
+     * @return string
+     */
+    public function getCurrentChar()
+    {
+        return $this->current_char;
     }
 }
