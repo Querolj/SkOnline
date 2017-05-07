@@ -745,7 +745,7 @@ class SkOController extends Controller
                     $location = new Map();
                     $location->setEmplacement($e);
                     $location->setRegion($r);
-                    $location->setCharacter($empty_character);
+                    $location->setCharacter(NULL);
 
                     $em->persist($location);
 
