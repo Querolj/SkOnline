@@ -26,16 +26,20 @@
 {% block body %}
 {% block javascripts %}
 <script type="text/javascript">
-    function increment(os, pierre, metal, human, persoPseudo) {
+    function increment(index,os, pierre, metal, human, persoPseudo) {
         window.setInterval(
         function () {
             os += 1;
             pierre += 1;
             metal += 1;
-            document.getElementById("os").innerHTML ="Os <span class='badge'>"+os+"</span>" ;
-            document.getElementById("pierre").innerHTML = "Pierre <span class='badge'>"+pierre+"</span>";
-            document.getElementById("metal").innerHTML = "Metal <span class='badge'>"+metal+"</span>";
-            document.getElementById("human").innerHTML = "Humain <span class='badge'>"+human+"</span>";
+            var xOs = document.getElementsByClassName("os");
+            xOs[index].innerHTML ="Os <span class='badge'>"+os+"</span>";
+            var xPierre = document.getElementsByClassName("pierre");
+            xPierre[index].innerHTML = "Pierre <span class='badge'>"+pierre+"</span>";
+            var xMetal = document.getElementsByClassName("metal");
+            xMetal[index].innerHTML = "Metal <span class='badge'>"+metal+"</span>";
+            var xHuman = document.getElementsByClassName("human");
+            xHuman[index].innerHTML = "Humain <span class='badge'>"+human+"</span>";
         }, 1000);
         window.setInterval(
             function () {
@@ -70,12 +74,14 @@
         </a>
     </p>
     {% for ressource in perso.ressources %}
-        <script>increment({{ressource.os}}, {{ressource.pierre}}, {{ressource.metal}}, {{ressource.human}},'{{ perso.pseudo }}');
-        </script>
-        <p><span id="os"></span>
-        <span id="pierre"></span>
-        <span id="metal"></span>
-        <span id="human"></span></p>
+    <script>
+        increment({{loop.parent.loop.index0}},{{ressource.os}}, {{ressource.pierre}}, {{ressource.metal}}, {{ressource.human}},'{{ perso.pseudo }}');
+    </script>
+        <p>
+        <span class="os"></span>
+        <span class="pierre"></span>
+        <span class="metal"></span>
+        <span class="human"></span></p>
     {% endfor %}
     {% for bat in perso.buildings %}
         <p>Mine de os <span class="badge">{{bat.bonesMine}}</span>

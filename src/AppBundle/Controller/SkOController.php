@@ -173,10 +173,12 @@ class SkOController extends Controller
     public function accueilAction(Request $request)
     {
         $player = $this->container->get("security.token_storage")->getToken()->getUser();
-        dump($player);
+        // $pseudo = $request->query->get('pseudo');
+        // $player = $this->getDoctrine()
+        //     ->getRepository('AppBundle:Player')
+        //     ->findOneByPseudo($pseudo);
         $persos = $player->getCharacters();
-        $pseudo = $player->getUsername();
-        return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo, 'persos' => $persos));
+        return $this->render('Sko/accueil.html.twig', array('pseudo' => $player->getPseudo(), 'persos' => $persos));
     }
 
 
@@ -437,11 +439,12 @@ class SkOController extends Controller
     public function uniteAction(Request $request)
     {
         $pseudo = $request->query->get('perso');
-        $pseudoPlayer = $request->query->get('pseudo');
+        //$pseudoPlayer = $request->query->get('pseudo');
         $perso = $this->getDoctrine()
             ->getRepository('AppBundle:Characters')
             ->findOneByPseudo($pseudo);
-        return $this->render('Sko/unite.html.twig', array('pseudo' => $pseudoPlayer,'perso' => $perso));
+        $player = $this->container->get("security.token_storage")->getToken()->getUser();
+        return $this->render('Sko/unite.html.twig', array('pseudo' => $player->getPseudo(),'perso' => $perso));
     }
 
     /**
@@ -460,14 +463,14 @@ class SkOController extends Controller
 
         if($form->isSubmitted() && $form->isValid())
         {
-            $pseudo = $request->query->get('pseudo');
-            $player = $this->getDoctrine()
-                ->getRepository('AppBundle:Player')
-                ->findOneByPseudo($pseudo);
+            $player = $this->container->get("security.token_storage")->getToken()->getUser();
+            // $pseudo = $request->query->get('pseudo');
+            // $player = $this->getDoctrine()
+            //     ->getRepository('AppBundle:Player')
+            //     ->findOneByPseudo($pseudo);
             $idPlayer = $player->getId();
             $name = $form['pseudo']->getData();
             $image = $form['image']->getData();
-            $village = "Village 1";
 
             $file = $character->getImage();
            $fileName = uniqid().'.'.$file->guessExtension();
@@ -487,7 +490,6 @@ class SkOController extends Controller
            $units = new units;
            $ressources = new ressources;
 
-            $building->setPseudo($village);
             $building->setPerso($character);
             $em = $this->getDoctrine()->getManager();
             $em->persist($building); // prépare l'insertion dans la BD
@@ -503,7 +505,7 @@ class SkOController extends Controller
             $em->persist($ressources); // prépare l'insertion dans la BD
             $em->flush();
 
-            return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo, 'persos' => $player->getCharacters()));
+            return $this->render('Sko/accueil.html.twig', array('pseudo' => $player->getPseudo(), 'persos' => $player->getCharacters()));
         }
         return $this->render('Sko/createPerso.html.twig', array('form' => $form->createView()));
     }
@@ -512,9 +514,7 @@ class SkOController extends Controller
      */
     public function uniteLogout(Request $request)
     {
-        return $this->render('Sko/menu.html.twig', array(
-
-            ));
+        return $this->render('Sko/menu.html.twig', array());
     }
     /**
      * @Route("/save", name="save")
