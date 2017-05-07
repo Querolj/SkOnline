@@ -19,3 +19,8 @@ img {
     width: 10%;
     height: 10%;
 }
+
+a.unite {
+    text-decoration: none;
+    color:black;
+}

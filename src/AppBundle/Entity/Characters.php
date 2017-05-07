@@ -390,4 +390,52 @@ class Characters
         $this->defender_log = $defender_log;
         return $this;
     }
+
+    /**
+     * Add attackerLog
+     *
+     * @param \AppBundle\Entity\AttackLog $attackerLog
+     *
+     * @return Characters
+     */
+    public function addAttackerLog(\AppBundle\Entity\AttackLog $attackerLog)
+    {
+        $this->attacker_log[] = $attackerLog;
+
+        return $this;
+    }
+
+    /**
+     * Remove attackerLog
+     *
+     * @param \AppBundle\Entity\AttackLog $attackerLog
+     */
+    public function removeAttackerLog(\AppBundle\Entity\AttackLog $attackerLog)
+    {
+        $this->attacker_log->removeElement($attackerLog);
+    }
+
+    /**
+     * Add defenderLog
+     *
+     * @param \AppBundle\Entity\AttackLog $defenderLog
+     *
+     * @return Characters
+     */
+    public function addDefenderLog(\AppBundle\Entity\AttackLog $defenderLog)
+    {
+        $this->defender_log[] = $defenderLog;
+
+        return $this;
+    }
+
+    /**
+     * Remove defenderLog
+     *
+     * @param \AppBundle\Entity\AttackLog $defenderLog
+     */
+    public function removeDefenderLog(\AppBundle\Entity\AttackLog $defenderLog)
+    {
+        $this->defender_log->removeElement($defenderLog);
+    }
 }

@@ -8,26 +8,25 @@
 
 <h1> Bonjour {{pseudo}}</h1>
 <ul class="nav navbar-nav">
-      <li><a href="/royaumes">Royaumes</a></li>
+      <li><a href="{{ path('accueil', {'pseudo': pseudo}) }}">Accueil</a></li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Personnages
+        <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+            {% for perso in persos %}
+              <li><a href="{{ path('unite', {'pseudo':pseudo,'perso': perso.pseudo}) }}"><img src='images/{{perso.image}}' alt="image du personnage" class="img-responsive img-circle">{{perso.pseudo}}</a></li>
+            {% endfor %}
+        </ul>
+      </li>
       <li><a href="/carte">Carte</a></li>
 </ul>
-<div class="nav navbar-right">
-    <!-- <ul class="ressources">
-          <li id="os"></li>
-          <li id="pierre"></li>
-          <li id="metal"></li>
-          <li id="human"></li>
-    </ul> -->
-	<a id="logout" class="btn btn-default" href="/logout"><span class="glyphicon glyphicon-off"></span> Logout</a>
-</div>
 {% endblock %}
-
 
 
 {% block body %}
 {% block javascripts %}
 <script type="text/javascript">
-    function increment(os, pierre, metal) {
+    function increment(os, pierre, metal, human, persoPseudo) {
         window.setInterval(
         function () {
             os += 1;
@@ -36,38 +35,47 @@
             document.getElementById("os").innerHTML ="Os <span class='badge'>"+os+"</span>" ;
             document.getElementById("pierre").innerHTML = "Pierre <span class='badge'>"+pierre+"</span>";
             document.getElementById("metal").innerHTML = "Metal <span class='badge'>"+metal+"</span>";
+            document.getElementById("human").innerHTML = "Humain <span class='badge'>"+human+"</span>";
         }, 1000);
+        window.setInterval(
+            function () {
+                var ressource = {};
+                ressource["os"] = os;
+                ressource["pierre"] =pierre;
+                ressource["metal"] =metal;
+                ressource["human"] =human;
+                $.ajax({
+                   type: 'POST',
+                   url: '{{ path("save") }}',
+                   contentType: 'application/json; charset=utf-8',
+                   data: JSON.stringify({'ressources': ressource, 'perso': persoPseudo}),
+                   dataType: 'json',
+                   success: function(response) {
+                       console.log(response);
+                   }
+               });
+          }, 5000);
     };
 </script>
-
 {% endblock %}
+
 <br><br><br>
-<p id="coucou"></p>
 <a class="btn btn-default" href="{{ path('createPerso', {'pseudo': pseudo}) }}">Création de personnage</a>
 {% for perso in persos %}
-    <p><img src='images/{{perso.image}}' alt="image du personnage" class="img-responsive img-circle">
-        {{perso.pseudo}}</p>
+<div class="col-sm-6 perso">
+    <p>
+        <a class="unite" href="{{ path('unite', {'pseudo':pseudo,'perso': perso.pseudo}) }}">
+            <img src='images/{{perso.image}}' alt="image du personnage" class="img-responsive img-circle">
+            {{perso.pseudo}}
+        </a>
+    </p>
     {% for ressource in perso.ressources %}
-        <script>increment({{ressource.os}}, {{ressource.pierre}}, {{ressource.metal}})</script>
+        <script>increment({{ressource.os}}, {{ressource.pierre}}, {{ressource.metal}}, {{ressource.human}},'{{ perso.pseudo }}');
+        </script>
         <p><span id="os"></span>
         <span id="pierre"></span>
         <span id="metal"></span>
-        Humain <span class="badge">{{ressource.human}}</span></p>
-        <!-- <script type="text/javascript">
-            window.setInterval(
-                function () {
-                    $.ajax({
-                       type: 'POST',
-                       url: '{ path('ressource_new') }}',
-                       contentType: 'application/json; charset=utf-8',
-                       data: JSON.stringify({ressource}}),
-                       dataType: 'json',
-                       success: function(response) {
-                           console.log(response);
-                       }
-                   });
-              }, 500000);
-        </script> -->
+        <span id="human"></span></p>
     {% endfor %}
     {% for bat in perso.buildings %}
         <p>Mine de os <span class="badge">{{bat.bonesMine}}</span>
@@ -83,5 +91,6 @@
         Squelette(s) mage <span class="badge">{{unit.mageSkeleton}}</span></p>
     {% endfor %}
 {% endfor %}
+</div>
 <p id="demo"></p>
 {% endblock %}

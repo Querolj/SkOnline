@@ -315,10 +315,22 @@ class SkOController extends Controller
     {
         //Vérifier le log de l'user et comparer à date_create()
         $pseudo = $request->request->get('player');
-        dump($pseudo);
+
         $current_char = $this->getDoctrine()
-                ->getRepository('AppBundle:Player')
-                ->findByCurrentChar($pseudo);
+                ->getRepository('AppBundle:Characters')
+                ->findOneByPseudo($pseudo);
+        echo $current_char->getPseudo();
+        $attack_log = $current_char->getAttackerLog();
+        $defender_log = $current_char->getDefenderLog();
+
+        foreach ($attack_log as $attack){
+            echo $attack->getStartTime();
+        }
+
+        foreach ($defender_log as $defender){
+            echo $defender->getStartTime();
+        }
+
 
         return new Response('');
     }
@@ -338,11 +350,86 @@ class SkOController extends Controller
                 ->getRepository('AppBundle:Message')
                 ->findByPlayer($player->getId());
         dump($messages[0]);
+
         return $this->render('Sko/messagerie.html.twig', array(
             'messages' => $messages
             ));
     }
 
+    /**
+     * @Route("/attackLog", name="attackLog")
+     */
+    public function attackLogAction(Request $request)
+    {
+        $attacks_displayed = array();
+        $defences_displayed = array();
+
+        $pseudo = $this->container->get("security.token_storage")->getToken()->getUser()->getUsername();
+        $player = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findOneByPseudo($pseudo);
+        $characters = $player->getCharacters();
+
+        foreach ($characters as $character) {
+            $pseudo_char = $character->getPseudo();
+            $attacks_log = $character->getAttackerLog();
+            $defends_log = $character->getDefenderLog();
+
+            foreach ($attacks_log as $attack_log) {
+                $defender = $attack_log->getDefender();
+                $unit_number = $attack_log->getUnitNumber();
+                $skeleton_or_skeletons = " squelettes";
+                $when_hit = date_diff(date_create(), $attack_log->getCampaignTime());
+
+                if($unit_number == 1)
+                    $skeleton_or_skeletons = " squelette";
+                $to_string = "Votre personnage "+$pseudo_char+" attaque "+$defender+" avec "+
+                $unit_number+$skeleton_or_skeletons+", votre troupe est partie le "+$attack_log->getStartTime()+
+                ".\nVous atteindrez l'ennemi dans "+$when_hit->format('%R%a days')+".";
+                array_push($attacks_displayed, $to_string);
+            }
+
+            foreach ($defends_log as $defend_log) {
+                $attacker = $defend_log->getAttacker();
+                $unit_number = $defend_log->getUnitNumber();
+                $skeleton_or_skeletons = " squelettes";
+                $when_hit = date_diff(date_create(), $defend_log->getCampaignTime());
+
+                if($unit_number == 1)
+                    $skeleton_or_skeletons = " squelette";
+                $to_string = "Votre personnage "+$pseudo_char+" va défendre contre "+$attacker+"qui arrive avec "+
+                $unit_number+$skeleton_or_skeletons+", sa troupe est partie le "+$defend_log->getStartTime()+
+                ".\nL'ennemi atteind vos rempart dans "+$when_hit->format('%R%a days')+".";
+                array_push($defences_displayed, $to_string);
+            }
+        }
+
+        if((count($attacks_displayed)>0) && (count($defences_displayed)>0))
+        {
+            return $this->render('Sko/attack_log.html.twig', array(
+            'attacks' -> $attacks_displayed,
+            'defences' -> $defences_displayed
+            ));
+        }
+        else if((count($attacks_displayed)>0))
+        {
+            return $this->render('Sko/attack_log.html.twig', array(
+            'attacks' -> $attacks_displayed,
+            ));
+        }
+        else if((count($defences_displayed)>0))
+        {
+            return $this->render('Sko/attack_log.html.twig', array(
+            'defences' -> $defences_displayed
+            ));
+        }
+        else
+        {
+            return $this->render('Sko/attack_log.html.twig', array(
+            ));
+        }
+
+    }
 
     /**
      * @Route("/construction", name="construction")

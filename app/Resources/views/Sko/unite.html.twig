@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{asset('css/units.css')}}">
+{% endblock %}
+
+{% block menu %}
+<ul class="nav navbar-nav">
+      <li><a href="{{ path('accueil', {'pseudo': pseudo}) }}">Accueil</a></li>
+      <li><a href="/carte">Carte</a></li>
+</ul>
+    {% block javascripts %}
+    <script type="text/javascript">
+        function increment(os, pierre, metal, human, persoPseudo) {
+            window.setInterval(
+            function () {
+                os += 1;
+                pierre += 1;
+                metal += 1;
+                document.getElementById("os").innerHTML ="Os <span class='badge'>"+os+"</span>" ;
+                document.getElementById("pierre").innerHTML = "Pierre <span class='badge'>"+pierre+"</span>";
+                document.getElementById("metal").innerHTML = "Metal <span class='badge'>"+metal+"</span>";
+                document.getElementById("human").innerHTML = "Humain <span class='badge'>"+human+"</span>";
+            }, 1000);
+            window.setInterval(
+                function () {
+                    var ressource = {};
+                    ressource["os"] = os;
+                    ressource["pierre"] =pierre;
+                    ressource["metal"] =metal;
+                    ressource["human"] =human;
+                    $.ajax({
+                       type: 'POST',
+                       url: '{{ path("save") }}',
+                       contentType: 'application/json; charset=utf-8',
+                       data: JSON.stringify({'ressources': ressource, 'perso': persoPseudo}),
+                       dataType: 'json',
+                       success: function(response) {
+                           console.log(response);
+                       }
+                   });
+              }, 5000);
+        };
+    </script>
+    {% endblock %}
+    {% for ressource in perso.ressources %}
+        <script>increment({{ressource.os}}, {{ressource.pierre}}, {{ressource.metal}}, {{ressource.human}},'{{ perso.pseudo }}');
+        </script>
+        <ul class="nav navbar-nav">
+        <li id="os"></li>
+        <li id="pierre"></li>
+        <li id="metal"></li>
+        <li id="human"></li>
+        </ul>
+    {% endfor %}
+{% endblock %}
+
+{% block body %}
+<div class="perso">
+    <p><img src='images/{{perso.image}}' alt="image du personnage" class="img-responsive img-circle">
+        {{perso.pseudo}}</p>
+    {% for bat in perso.buildings %}
+        <p>Mine de os <span class="badge">{{bat.bonesMine}}</span>
+        Mine de pierre <span class="badge">{{bat.stoneMine}}</span>
+        Mine de metal <span class="badge">{{bat.gemMine}}</span></p>
+        <p>Prison d'humains <span class="badge">{{bat.stoneMine}}</span>
+        Bâtiment des squelettes <span class="badge">{{bat.stoneMine}}</span>
+        Bâtiment des mages Squelette <span class="badge">{{bat.stoneMine}}</span></p>
+    {% endfor %}
+    {% for unit in perso.units %}
+        <p>Squelette(s) <span class="badge">{{unit.skeleton}}</span>
+        Squelette(s) guerrier <span class="badge">{{unit.skeletonWar}}</span>
+        Squelette(s) mage <span class="badge">{{unit.mageSkeleton}}</span></p>
+    {% endfor %}
+</div>
+
+<div class="actions">
+    <h3>Achat de bâtiments</h3>
+    <p>
+        <a class="btn btn-default" href="{{ path('actionBuilding', {'pseudo' : perso.pseudo, 'ressource': "os"}) }}">Mine d'os<br>Coût: 20 os & 40 pierres</a>
+        <a class="btn btn-default" href="{{ path('actionBuilding', {'pseudo' : perso.pseudo, 'ressource': "pierre"}) }}">Mine de pierre<br>Coût: 40 os & 20 pierres</a>
+        <a class="btn btn-default" href="{{ path('actionBuilding', {'pseudo' : perso.pseudo, 'ressource': "métal"}) }}">Mine de métal<br>Coût: 50 os & 50 pierres & 40 métaux</a>
+    </p>
+
+    <p>
+        <a class="btn btn-default" href="{{ path('actionBuilding', {'pseudo' : perso.pseudo, 'ressource': "humain"}) }}">Prison d'humain<br>Coût: 100 os & 100 pierres<br>50 métaux</a>
+        <a class="btn btn-default" href="{{ path('actionBuilding', {'pseudo' : perso.pseudo, 'ressource': "squelette"}) }}">Batiment de squelette<br>Coût: 200 os & 200 pierres<br>100 métaux</a>
+        <a class="btn btn-default" href="{{ path('actionBuilding', {'pseudo' : perso.pseudo, 'ressource': "mage"}) }}">Bâtiment des mages<br>Coût: 200 os & 200 pierres<br>100 métaux</a>
+    </p>
+    <h3>Achat d'unités</h3>
+    <p>
+        <a class="btn btn-default" href="{{ path('actionUnite', {'pseudo' : perso.pseudo,'ressource': "squelette"}) }}">Squelette<br>Coût: 60 os & 1 humain</a>
+        <a class="btn btn-default" href="{{ path('actionUnite', {'pseudo' : perso.pseudo,'ressource': "war"}) }}">Guerrier<br>Coût: 60 os & 10 métaux & 1 humain</a>
+        <a class="btn btn-default" href="{{ path('actionUnite', {'pseudo' : perso.pseudo,'ressource': "mage"}) }}">Mage<br>Coût: 180 os & 30 métaux & 3 humains</a>
+    </p>
+
+</div>
+
+{% endblock %}

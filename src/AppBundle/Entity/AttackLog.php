@@ -187,4 +187,3 @@ class AttackLog
         return $this->defender;
     }
 }
-

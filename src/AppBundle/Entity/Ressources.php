@@ -74,27 +74,27 @@ class Ressources
     }
 
     /**
-     * Set bois
+     * Set os
      *
-     * @param integer $bois
+     * @param integer $os
      *
      * @return Ressources
      */
-    public function setBois($bois)
+    public function setOs($os)
     {
-        $this->bois = $bois;
+        $this->os = $os;
 
         return $this;
     }
 
     /**
-     * Get bois
+     * Get os
      *
      * @return int
      */
-    public function getBois()
+    public function getOs()
     {
-        return $this->bois;
+        return $this->os;
     }
 
     /**
@@ -191,30 +191,6 @@ class Ressources
     public function getPlayer()
     {
         return $this->player;
-    }
-
-    /**
-     * Set os
-     *
-     * @param integer $os
-     *
-     * @return Ressources
-     */
-    public function setOs($os)
-    {
-        $this->os = $os;
-
-        return $this;
-    }
-
-    /**
-     * Get os
-     *
-     * @return integer
-     */
-    public function getOs()
-    {
-        return $this->os;
     }
 
     /**
