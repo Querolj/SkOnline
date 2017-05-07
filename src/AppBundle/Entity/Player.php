@@ -68,6 +68,13 @@ class Player extends EntityRepository implements UserInterface, \Serializable
      */
     protected $salt;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="current_char", type="string", length=255)
+     */
+    private $current_char;
+
     public function __construct(){
         $this->characters = new ArrayCollection();
     }
@@ -296,5 +303,73 @@ class Player extends EntityRepository implements UserInterface, \Serializable
         ->getQuery()
         ->getOneOrNullResult()
         ;
+    }
+
+    /**
+     * Set current_char
+     *
+     * @param string $current_char
+     *
+     * @return Player
+     */
+    public function setCurrentChar($current_char)
+    {
+        $this->current_char = $current_char;
+
+        return $this;
+    }
+
+    /**
+     * Get current_char
+     *
+     * @return string
+     */
+    public function getCurrentChar()
+    {
+        return $this->current_char;
+    }
+
+    public function findOneByCurrentChar($pseudo)
+    {
+        return $this->createQueryBuilder('u')
+        ->andWhere('u.current_char = :current_char')
+        ->setParameter('current_char', $current_char)
+        ->getQuery()
+        ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * Add message
+     *
+     * @param \AppBundle\Entity\Message $message
+     *
+     * @return Player
+     */
+    public function addMessage(\AppBundle\Entity\Message $message)
+    {
+        $this->messages[] = $message;
+
+        return $this;
+    }
+
+    /**
+     * Remove message
+     *
+     * @param \AppBundle\Entity\Message $message
+     */
+    public function removeMessage(\AppBundle\Entity\Message $message)
+    {
+        $this->messages->removeElement($message);
+    }
+
+    /**
+     * Get messages
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getMessages()
+    {
+        return $this->messages;
     }
 }
