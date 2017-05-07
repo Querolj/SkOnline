@@ -329,7 +329,6 @@ class Player extends EntityRepository implements UserInterface, \Serializable
         return $this->current_char;
     }
 
-
     public function findOneByCurrentChar($pseudo)
     {
         return $this->createQueryBuilder('u')

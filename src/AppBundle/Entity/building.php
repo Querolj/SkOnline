@@ -22,13 +22,6 @@ class building
     private $id;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="pseudo", type="string", length=255, unique=true)
-     */
-    private $pseudo;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="bones_mine", type="integer")
@@ -94,30 +87,6 @@ class building
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set pseudo
-     *
-     * @param string $pseudo
-     *
-     * @return building
-     */
-    public function setPseudo($pseudo)
-    {
-        $this->pseudo = $pseudo;
-
-        return $this;
-    }
-
-    /**
-     * Get pseudo
-     *
-     * @return string
-     */
-    public function getPseudo()
-    {
-        return $this->pseudo;
     }
 
     /**
