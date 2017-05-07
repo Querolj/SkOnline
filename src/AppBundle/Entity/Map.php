@@ -38,13 +38,13 @@ class Map
     /**
      * @var int
      * @ORM\ManyToOne(targetEntity="Characters", inversedBy="location")
-     * @ORM\JoinColumn(name="idCharacter", referencedColumnName="id")
+     * @ORM\JoinColumn(name="idCharacter", referencedColumnName="id", nullable=true)
      */
     private $character;
 
     /**
      * @var int
-     * @ORM\Column(name="idCharacter", type="integer")
+     * @ORM\Column(name="idCharacter", type="integer", nullable=true)
      */
     private $idCharacter;
 

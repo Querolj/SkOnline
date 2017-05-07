@@ -163,11 +163,10 @@ class SkOController extends Controller
      */
     public function accueilAction(Request $request)
     {
-        $pseudo = $request->query->get('pseudo');
-        $player = $this->getDoctrine()
-            ->getRepository('AppBundle:Player')
-            ->findOneByPseudo($pseudo);
+        $player = $this->container->get("security.token_storage")->getToken()->getUser();
+        dump($player);
         $persos = $player->getCharacters();
+        $pseudo = $player->getUsername();
         return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo, 'persos' => $persos));
     }
 
@@ -746,7 +745,7 @@ class SkOController extends Controller
                     $location = new Map();
                     $location->setEmplacement($e);
                     $location->setRegion($r);
-                    $location->setCharacter($empty_character);
+                    $location->setCharacter(NULL);
 
                     $em->persist($location);
 

@@ -39,20 +39,24 @@
         {% for location in map %}    
         <tr>
             <td>{{ location.emplacement }}:{{ location.region }}</td>
-            <td>{{ location.character.pseudo }}</td>
-            <td>
-                {% if location.character.pseudo != "Vide" %}
-                <button class="attaquer" 
-                value="{{ location.emplacement }}"
-                player="{{ location.character.player.pseudo }}"
-                 >Attaquer {{ location.character.pseudo }}</button>
+            {% if location.character.pseudo is defined %}
+                <td>{{ location.character.pseudo }}</td>
+                <td>
+                    <button class="attaquer" 
+                    value="{{ location.emplacement }}"
+                    player="{{ location.character.player.pseudo }}"
+                     >Attaquer {{ location.character.pseudo }}</button>
 
-                <button class="message"
-                value="{{ location.emplacement }}"
-                player="{{ location.character.player.pseudo }}"
-                >Envoyer un message</button>
-                {% endif%}
-            </td>
+                    <button class="message"
+                    value="{{ location.emplacement }}"
+                    player="{{ location.character.player.pseudo }}"
+                    >Envoyer un message</button>
+                </td>
+            {% else %}
+                <td>Vide</td>
+                <td>_______________</td>
+            {% endif%}
+            
         </tr>
         {% endfor %}
 
