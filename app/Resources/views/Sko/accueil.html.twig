@@ -42,6 +42,12 @@
             xHuman[index].innerHTML = "Humain <span class='badge'>"+human+"</span>";
         }, 1000);
         window.setInterval(
+        function () {
+            human +=1;
+            var xHuman = document.getElementsByClassName("human");
+            xHuman[index].innerHTML = "Humain <span class='badge'>"+human+"</span>";
+        }, 10000);
+        window.setInterval(
             function () {
                 var ressource = {};
                 ressource["os"] = os;
