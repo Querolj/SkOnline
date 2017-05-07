@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+	{% if attacks is defined %}
+		<div id="attack_log">
+			{% for attack in attacks %}
+				<p>{{ attack }}</p>
+			{% endfor %}
+		</div>
+	{% endif %}
+	{% if defences is defined %}
+		<div id="defence_log">
+			{% for defence in defences %}
+				<p>{{ defence }}</p>
+			{% endfor %}
+		</div>
+	{% endif %}
+{% endblock %}
