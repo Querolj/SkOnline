@@ -18,6 +18,9 @@
     onclick="window.location='/carte';" /> 
 </div>
 
+<div id="attack_form">
+
+</div>
 <div id="Map">
 
 <div id="direction">
@@ -81,11 +84,11 @@
             var mess_type = "{{ mess_type }}";
             var to = "{{ to }}";
 
-                $.post('{{ path('send') }}', {text:text, sender:sender, mess_type:mess_type, to:to}, function(data)
-                {
-                    console.log(data);
-                    $('#Map').text(data);
-                });
+            $.post('{{ path('send') }}', {text:text, sender:sender, mess_type:mess_type, to:to}, function(data)
+            {
+                $("#message_form").hide();
+                $('#Map').show();
+            });
             
             
 
