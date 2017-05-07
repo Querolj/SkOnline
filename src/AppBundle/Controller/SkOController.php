@@ -126,7 +126,7 @@ class SkOController extends Controller
             $pseudo = $form['pseudo']->getData();
             $email = $form['email']->getData();
             $player->setSalt(uniqid(mt_rand()));
-
+            $player->setCurrentChar(NULL);
             $encoder = $this->container->get('sha256salted_encoder')
             ->getEncoder($player);
             $password = $encoder->encodePassword($form['password']->getData(), $player->getSalt());
@@ -139,9 +139,18 @@ class SkOController extends Controller
             $player->setPassword($password);
             $player->setDateLog($date);
 
+            
+
+
             $em = $this->getDoctrine()->getManager();
             $em->persist($player); // prépare l'insertion dans la BD
             $em->flush(); // insère dans la BD
+
+            $token = new UsernamePasswordToken($player, $player->getPassword(), "main", $player->getRoles());  
+            $event = new InteractiveLoginEvent(new Request(), $token);
+            $this->container->get("event_dispatcher")->dispatch("security.interactive_login", $event);
+            $this->container->get("security.token_storage")->setToken($token);
+
             return $this->render('Sko/accueil.html.twig', array('pseudo' => $pseudo, 'persos' => $player->getCharacters()));
         }
         return $this->render('Sko/registration.html.twig', array('form' => $form->createView()));
@@ -179,6 +188,11 @@ class SkOController extends Controller
 
 
         $player = $this->container->get("security.token_storage")->getToken()->getUser();
+        $pseudo_char = $player->getCurrentChar();
+        $current_char = $this->getDoctrine()->getRepository('AppBundle:Characters')
+                            ->findOneByPseudo($pseudo_char);
+
+
         $message = new Message;
         //dump($player->getCharacters());
 
@@ -207,35 +221,12 @@ class SkOController extends Controller
                     'text' => $form['message']->getData(),
                     'sender' => $player->getUsername(),
                     "mess_type" => "message",
-                    "to" => $to->getPseudo()
+                    "to" => $to->getPseudo(), 
+                    "current_char" => $current_char
                     ));
 
-            if($request->query->has('to'))
-            {
-                /*dump("sending...");
-                $message->setMessage($form['message']->getData());
-                $message->setSender($player->getUsername());
-                $message->setVu(false);
-                $message->setDateSend(date_create());
-                $message->setMessType("message");
-                $to = $this->getDoctrine()->getRepository('AppBundle:Player')
-                            ->findOneByPseudo($request->query->get('to'));
-                $id_to = $to->getId();
-                dump($id_to);
-                dump($to);
-                //$message->setIdPlayer($id_to);
-                $message->setPlayer($to);
-
-                //TODO : get to depuis la database et lui foutre le message
-                $em = $this->getDoctrine()->getManager();
-                $em->persist($message); // prépare l'insertion dans la BD
-                $em->flush();
-                window.location = '/carte?to=' + player_envoie;*/
-            }
-
-
-
         }
+
 
         if ($request->isMethod('GET') && $request->query->has('region')) {
             $action = $request->query->get('action');
