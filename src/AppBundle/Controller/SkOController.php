@@ -308,6 +308,21 @@ class SkOController extends Controller
     }
 
     /**
+     * @Route("/update_attack_log", name="update_attack_log")
+     */
+    public function updateAttackLog(Request $request)
+    {
+        //Vérifier le log de l'user et comparer à date_create()
+        $pseudo = $request->request->get('player');
+        dump($pseudo);
+        $current_char = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findByCurrentChar($pseudo);
+
+        return new Response('');
+    }
+
+    /**
      * @Route("/messagerie", name="messagerie")
      */
     public function messagerieAction(Request $request)
@@ -455,4 +470,54 @@ class SkOController extends Controller
     //     }
     //     return new Response('Error!', 400);
     // }
+
+    /**
+     * @Route("/initMap", name="initMap")
+     */
+    public function initMapAction(Request $request)
+    {
+        return $this->render('Sko/init.html.twig', array(
+
+            ));
+    }
+
+    /**
+     * @Route("/init", name="init")
+     */
+    public function initMap(Request $request)
+    {
+        $check_map = $this->getDoctrine()->getRepository("AppBundle:Map")->findById(5);
+        if($check_map)
+        {
+            return new Response('la map a déjà été initialisé.');
+        }
+        else
+        {
+            $empty_character = $this->getDoctrine()->getRepository("AppBundle:Characters")->findOneById(1);
+            $em = $this->getDoctrine()->getManager();
+            $location = new Map();
+
+            for ($r = 1; $r <= 20; $r++) 
+            {
+                for ($e = 1; $e <= 10; $e++) 
+                {
+                    $location = new Map();
+                    $location->setEmplacement($e);
+                    $location->setRegion($r);
+                    $location->setCharacter($empty_character);
+
+                    $em->persist($location);
+
+                }
+
+            }
+
+            $em->flush();
+            return new Response('La map vient d\'etre initialisé.');
+        }
+        
+
+        
+    }
+
 }
