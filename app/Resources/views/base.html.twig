@@ -43,10 +43,12 @@
           {{ form_end(form) }}
         </div>
         {% else %}
-        <div class="nav navbar-right">
-          <img class="icon" src="{{asset('images/sword.svg')}}" alt="sword" onclick="window.location='/attackLog';">
-          <span class='badge' id="attack_badge"></span>
-          <img class="icon" src="{{asset('images/env.svg')}}" alt="mess" onclick="window.location='/messagerie';">
+          {% if app.user.currentchar != NULL%}
+            <div class="nav navbar-right">
+            <img class="icon" src="{{asset('images/sword.svg')}}" alt="sword" onclick="window.location='/attackLog';">
+            <span class='badge' id="attack_badge"></span>
+            <img class="icon" src="{{asset('images/env.svg')}}" alt="mess" onclick="window.location='/messagerie';">
+          {%endif%}
           <a id="logout"  class="btn btn-default" href="/logout"><span class="glyphicon glyphicon-user"></span> Déconnexion</a>
         </div>
         {% endif %}
@@ -72,19 +74,28 @@
 </br>
 </br>
 {% block body %}{% endblock %}
-{% if is_granted('IS_AUTHENTICATED_FULLY') and app.user.currentchar is defined%}
+{% if is_granted('IS_AUTHENTICATED_FULLY') and app.user.currentchar != NULL%}
 <script>
   function increment(compteur) {
         window.setInterval(
         function () {
             //console.log(compteur);
             compteur += 1;
-            document.getElementById("attack_badge").innerHTML = compteur;
-            if(compteur % 5==0)
+            if(compteur % 3==0)
             {
-              $.post('{{ path('update_attack_log') }}', { player:"{{app.user.currentchar}}" }, function(data)
+              $.post('{{ path('update_attack_log') }}', { pseudo:"{{app.user.currentchar}}",
+              player:"{{app.user.username}}" }, function(data)
               {
-                console.log(data);
+                if(data=='')
+                {
+                  $("#attack_badge").innerHTML = "";
+                  console.log("PAS DATTAQUE");
+                }
+                else
+                {
+                  console.log("ATK");
+                  $("#attack_badge").innerHTML = "!";
+                }
               });
               compteur = 0;
 

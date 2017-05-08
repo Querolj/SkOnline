@@ -38,9 +38,23 @@ class AttackLog
     /**
      * @var int
      *
-     * @ORM\Column(name="unit_number", type="integer")
+     * @ORM\Column(name="skeleton", type="integer")
      */
-    private $unitNumber;
+    private $skeleton;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="war_skeleton", type="integer")
+     */
+    private $war_skeleton;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="mage_skeleton", type="integer")
+     */
+    private $mage_skeleton;
 
     /**
      * @var int
@@ -116,37 +130,85 @@ class AttackLog
     }
 
     /**
-     * Set unitNumber
+     * Set skeleton
      *
-     * @param integer $unitNumber
+     * @param integer $skeleton
      *
      * @return AttackLog
      */
-    public function setUnitNumber($unitNumber)
+    public function setSkeleton($skeleton)
     {
-        $this->unitNumber = $unitNumber;
+        $this->skeleton = $skeleton;
 
         return $this;
     }
 
     /**
-     * Get unitNumber
+     * Get skeleton
      *
      * @return int
      */
-    public function getUnitNumber()
+    public function getSkeleton()
     {
-        return $this->unitNumber;
+        return $this->skeleton;
+    }
+
+    /**
+     * Set war_skeleton
+     *
+     * @param integer $war_skeleton
+     *
+     * @return AttackLog
+     */
+    public function setWarSkeleton($war_skeleton)
+    {
+        $this->war_skeleton = $war_skeleton;
+
+        return $this;
+    }
+
+    /**
+     * Get war_skeleton
+     *
+     * @return int
+     */
+    public function getWarSkeleton()
+    {
+        return $this->war_skeleton;
+    }
+
+    /**
+     * Set mage_skeleton
+     *
+     * @param integer $mage_skeleton
+     *
+     * @return AttackLog
+     */
+    public function setMageSkeleton($mage_skeleton)
+    {
+        $this->mage_skeleton = $mage_skeleton;
+
+        return $this;
+    }
+
+    /**
+     * Get mage_skeleton
+     *
+     * @return int
+     */
+    public function getMageSkeleton()
+    {
+        return $this->mage_skeleton;
     }
 
     /**
      * Set attacker
      *
-     * @param \AppBundle\Entity\Player $attacker
+     * @param \AppBundle\Entity\Characters $attacker
      *
      * @return AttackLog
      */
-    public function setAttacker(\AppBundle\Entity\Player $attacker = null)
+    public function setAttacker(\AppBundle\Entity\Characters $attacker = null)
     {
         $this->attacker = $attacker;
 
@@ -156,7 +218,7 @@ class AttackLog
     /**
      * Get attacker
      *
-     * @return \AppBundle\Entity\Player
+     * @return \AppBundle\Entity\Characters
      */
     public function getAttacker()
     {
@@ -166,11 +228,11 @@ class AttackLog
     /**
      * Set defender
      *
-     * @param \AppBundle\Entity\Player $defender
+     * @param \AppBundle\Entity\Characters $defender
      *
      * @return AttackLog
      */
-    public function setDefender(\AppBundle\Entity\Player $defender = null)
+    public function setDefender(\AppBundle\Entity\Characters $defender = null)
     {
         $this->defender = $defender;
 
@@ -180,7 +242,7 @@ class AttackLog
     /**
      * Get defender
      *
-     * @return \AppBundle\Entity\Player
+     * @return \AppBundle\Entity\Characters
      */
     public function getDefender()
     {

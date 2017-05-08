@@ -20,11 +20,11 @@
 
 <div id="attack_form">
     <p>Vous avez {{ current_char.units[0].skeleton }} squelettes.</p>
-    <input type="number" step="1" value="0" min="0" max="{{ current_char.units[0].skeleton }}"/>
+    <input id="num_skeleton" type="number" step="1" value="0" min="0" max="{{ current_char.units[0].skeleton }}"/>
     <p>Vous avez {{ current_char.units[0].skeletonWar }} guerriers squelettes.</p>
-    <input type="number" step="1" value="0" min="0" max="{{ current_char.units[0].skeletonWar }}"/>
+    <input id="num_war_skeleton" type="number" step="1" value="0" min="0" max="{{ current_char.units[0].skeletonWar }}"/>
     <p>Vous avez {{ current_char.units[0].mageSkeleton }} squelettes mages.</p>
-    <input type="number" step="1" value="0" min="0" max="{{ current_char.units[0].mageSkeleton }}"/>
+    <input id="num_mage_skeleton" type="number" step="1" value="0" min="0" max="{{ current_char.units[0].mageSkeleton }}"/>
 
     <button id="attack_go">ATTAQUER.</button>
     <input type="submit" value="Retourner à la carte" 
@@ -107,6 +107,7 @@
         $("#message_form").hide();
     {% else %}
         $("#message_form").hide();
+        $("#attack_form").hide();
         $("#Map").show(); 
     {% endif %}
 
@@ -148,8 +149,12 @@
     {
         var character_to_attack_pseudo = getUrlParameter('atk');
         console.log("{{ current_char.pseudo }}");
+        var skeleton = parseInt($("#num_skeleton").val(), 10);
+        var war_skeleton = parseInt($("#num_war_skeleton").val(), 10);
+        var mage_skeleton = parseInt($("#num_mage_skeleton").val(), 10);
 
-        $.post('{{ path('GOGOAttack') }}', {character_to_attack_pseudo:character_to_attack_pseudo, current_char_pseudo:"{{ current_char.pseudo }}" }, function(data)
+        $.post('{{ path('GOGOAttack') }}', {character_to_attack_pseudo:character_to_attack_pseudo, current_char_pseudo:"{{ current_char.pseudo }}", skeleton:skeleton, war_skeleton:war_skeleton,
+        mage_skeleton:mage_skeleton}, function(data)
         {
             console.log(data);
 

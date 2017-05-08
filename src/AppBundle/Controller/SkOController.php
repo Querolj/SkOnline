@@ -307,31 +307,335 @@ class SkOController extends Controller
         return new Response('send');
     }
 
+    public function damageCalcul($skeleton,$war_skeleton,$mage_skeleton,$is_defender)
+    {
+        $attack_dmg = 0;
+        for($i = 1;$i <= $skeleton; $i++)
+        {
+            $attack_dmg = $attack_dmg + rand(1,3);
+        }
+        for($i = 1;$i <= $war_skeleton; $i++)
+        {
+            $attack_dmg = $attack_dmg + rand(2,3);
+        }
+        for($i = 1;$i <= $mage_skeleton; $i++)
+        {
+            $attack_dmg = $attack_dmg + rand(6,14);
+        }
+            return $attack_dmg;
+
+    }
+
+    public function rand_needed($skeleton_lp, $war_skeleton_lp, $mage_skeleton_lp)
+    {
+        if($skeleton_lp > 0 && $war_skeleton_lp > 0 && $mage_skeleton_lp > 0){
+            return rand(1,3);
+        }
+        else if($skeleton_lp > 0 && $war_skeleton_lp > 0 ){
+            return rand(1,2);
+        }
+        else if($war_skeleton_lp > 0 && $mage_skeleton_lp > 0){
+            return rand(2,3);
+        }
+        else if($skeleton_lp > 0 && $mage_skeleton_lp > 0){
+            if(rand(1,2)==1)
+                return 1;
+            else
+                return 3;
+        }
+        else if($skeleton_lp > 0){
+            return 1;
+        }
+        else if($war_skeleton_lp > 0){
+            return 2;
+        }
+        else if($mage_skeleton_lp > 0){
+            return 3;
+        }
+        else{
+            return -1;
+        }
+
+    }
+
+    public function damageTaken($damage, $war_skeleton,$mage_skeleton)
+    {
+        $defence = 0;
+            //$attack_dmg = $skeleton+$war_skeleton+$mage_skeleton;
+
+        for($i = 1;$i <= $war_skeleton; $i++)
+        {
+            $defence = $defence + 1;
+        }
+        for($i = 1;$i <= $mage_skeleton; $i++)
+        {
+            $defence = $defence + 2;
+        }
+        if( ($damage - $defence) > 0)
+            return ($damage - $defence);
+        else
+            return 0;
+    }
+
     /**
      * @Route("/update_attack_log", name="update_attack_log")
      */
     public function updateAttackLog(Request $request)
     {
-        //Vérifier le log de l'user et comparer à date_create()
-        $pseudo = $request->request->get('player');
+        $pseudo = $request->request->get('pseudo');
+        $pseudo_player = $request->request->get('player');
+        $player = $this->getDoctrine()
+                ->getRepository('AppBundle:Player')
+                ->findOneByPseudo($pseudo_player);
 
+        $em = $this->getDoctrine()->getManager();
         $current_char = $this->getDoctrine()
                 ->getRepository('AppBundle:Characters')
                 ->findOneByPseudo($pseudo);
-        echo $current_char->getPseudo();
-        $attack_log = $current_char->getAttackerLog();
-        $defender_log = $current_char->getDefenderLog();
 
-        foreach ($attack_log as $attack){
-            echo $attack->getStartTime();
+        $attacks_log = $current_char->getAttackerLog();
+        $defences_log = $current_char->getDefenderLog();
+        $now = date_create();
+
+        $rep = '';
+
+        foreach ($attacks_log as $attack_log){
+            echo $attack_log->getStartingTime()->format('Y-m-d H:i:s');
+            echo "   : ";
+            if(date_create() > $attack_log->getCampaignTime())
+            {
+                $attacker = $attack_log->getAttacker();
+                $skeleton = $attack_log->getSkeleton();
+                $war_skeleton = $attack_log->getWarSkeleton();
+                $mage_skeleton = $attack_log->getMageSkeleton();
+                $attack_dmg = $this->damageCalcul($skeleton, $war_skeleton, $mage_skeleton, false);
+
+                $defender = $attack_log->getDefender();
+                $def_skeleton = $defender->getUnits()[0]->getSkeleton(); 
+                $def_war_skeleton = $defender->getUnits()[0]->getSkeletonWar(); 
+                $def_mage_skeleton = $defender->getUnits()[0]->getMageSkeleton(); 
+                $defence_dmg = $this->damageCalcul($def_skeleton, $def_war_skeleton, $def_mage_skeleton, true);
+
+                //Les unités prennent des dommages et sont sauvegardés dans la DDB
+                $defender_dmg_taken = $this->damageTaken($attack_dmg, $def_war_skeleton, $def_mage_skeleton);
+                $attacker_dmg_taken = $this->damageTaken($defence_dmg, $war_skeleton, $mage_skeleton);
+
+                //Perte d'unité de l'attaquant
+                $skeleton_lp = $skeleton*2;
+                $war_skeleton_lp = $war_skeleton*3;
+                $mage_skeleton_lp = $mage_skeleton*5;
+                for($i = 1; $i <= $attacker_dmg_taken; $i++)
+                {
+                    $rand = $this->rand_needed($skeleton_lp, $war_skeleton_lp, $mage_skeleton_lp);
+                    if($rand == 1)
+                        $skeleton_lp = $skeleton_lp - 1;
+                    else if($rand == 2)
+                        $war_skeleton_lp = $war_skeleton_lp - 1;
+                    else
+                        $mage_skeleton_lp = $mage_skeleton_lp - 1;
+                }
+                if($skeleton_lp <=0 )
+                    $attacker->getUnits()[0]->setSkeleton(0);
+                else
+                    $attacker->getUnits()[0]->setSkeleton(ceil($skeleton_lp/2));
+                if($war_skeleton_lp <= 0)
+                    $attacker->getUnits()[0]->setSkeletonWar(0);
+                else
+                    $attacker->getUnits()[0]->setSkeletonWar(ceil($war_skeleton_lp/3));
+                if($mage_skeleton_lp <= 0)
+                    $attacker->getUnits()[0]->setMageSkeleton(0);
+                else
+                    $attacker->getUnits()[0]->setMageSkeleton(ceil($mage_skeleton_lp/2));
+
+                $em->persist($attacker);
+
+                //Perte d'unité du défenseur
+                $def_skeleton_lp = $def_skeleton*2;
+                $def_war_skeleton_lp = $def_war_skeleton*3;
+                $def_mage_skeleton_lp = $def_mage_skeleton*5;
+                for($i = 1; $i <= $defender_dmg_taken; $i++)
+                {
+                    $rand = $this->rand_needed($def_skeleton_lp, $def_war_skeleton_lp, $def_mage_skeleton_lp);
+                    if($rand == 1)
+                        $def_skeleton_lp = $def_skeleton_lp - 1;
+                    else if($rand == 2)
+                        $def_war_skeleton_lp = $def_war_skeleton_lp - 1;
+                    else
+                        $def_mage_skeleton_lp = $def_mage_skeleton_lp - 1;
+                }
+                if($def_skeleton_lp <=0 )
+                    $defender->getUnits()[0]->setSkeleton(0);
+                else
+                    $defender->getUnits()[0]->setSkeleton(ceil($skeleton_lp/2));
+                if($def_war_skeleton_lp <= 0)
+                    $defender->getUnits()[0]->setSkeletonWar(0);
+                else
+                    $defender->getUnits()[0]->setSkeletonWar(ceil($war_skeleton_lp/3));
+                if($def_mage_skeleton_lp <= 0)
+                    $defender->getUnits()[0]->setMageSkeleton(0);
+                else
+                    $defender->getUnits()[0]->setMageSkeleton(ceil($mage_skeleton_lp/2));
+
+                $em->remove($attack_log);
+                $em->persist($defender); 
+                
+                //On envoie 2 messages
+
+                $mess_def = new Message;
+                $mess_atk = new Message;
+
+                
+                $mess_def->setPlayer($defender->getPlayer());
+                $mess_atk->setPlayer($player);
+                $mess_def->setVu(false);
+                $mess_atk->setVu(false);
+                $mess_def->setSender("Rapport");
+                $mess_atk->setSender("Rapport");
+                $mess_def->setMessType("Defense");
+                $mess_atk->setMessType("Attaque");
+                $mess_def->setDateSend(date_create());
+                $mess_atk->setDateSend(date_create());
+                
+
+                $mess_def->setMessage("Vous avez défendu contre {$attacker->getPseudo()} à 
+                    {$now->format('Y-m-d H:i:s')}.\nIl vous reste
+                    {$defender->getUnits()[0]->getSkeleton()} squelettes, 
+                    {$defender->getUnits()[0]->getSkeletonWar()} guerriers squelettes et
+                    {$defender->getUnits()[0]->getMageSkeleton()} mages squelettes.");
+
+
+                $mess_atk->setMessage("Vous avez attaqué {$defender->getPseudo()} à 
+                    {$now->format('Y-m-d H:i:s')}.\nIl vous reste
+                    {$attacker->getUnits()[0]->getSkeleton()} squelettes, 
+                    {$attacker->getUnits()[0]->getSkeletonWar()} guerriers squelettes et
+                    {$attacker->getUnits()[0]->getMageSkeleton()} mages squelettes.");
+
+                $em->persist($mess_atk);
+                $em->persist($mess_def);
+                $rep = 'rep';
+
+            }
+              
+            
         }
 
-        foreach ($defender_log as $defender){
-            echo $defender->getStartTime();
+        foreach ($defences_log as $defence_log){
+            echo $defence_log->getStartingTime()->format('Y-m-d H:i:s');
+            if(date_create() > $defence_log->getCampaignTime())
+            {
+                $attacker = $defence_log->getAttacker();
+                $skeleton = $defence_log->getSkeleton();
+                $war_skeleton = $defence_log->getWarSkeleton();
+                $mage_skeleton = $defence_log->getMageSkeleton();
+                $attack_dmg = $this->damageCalcul($skeleton, $war_skeleton, $mage_skeleton, false);
+
+                $defender = $defence_log->getDefender();
+                $def_skeleton = $defender->getUnits()[0]->getSkeleton(); 
+                $def_war_skeleton = $defender->getUnits()[0]->getSkeletonWar(); 
+                $def_mage_skeleton = $defender->getUnits()[0]->getMageSkeleton();  
+                $defence_dmg = $this->damageCalcul($def_skeleton, $def_war_skeleton, $def_mage_skeleton, true);
+
+                //Les unités prennent des dommages et sont sauvegardés dans la DDB
+                $defender_dmg_taken = $this->damageTaken($attack_dmg, $def_war_skeleton, $def_mage_skeleton);
+                $attacker_dmg_taken = $this->damageTaken($defence_dmg, $war_skeleton, $mage_skeleton);
+
+                //Perte d'unité de l'attaquant
+                $skeleton_lp = $skeleton*2;
+                $war_skeleton_lp = $war_skeleton*3;
+                $mage_skeleton_lp = $mage_skeleton*5;
+                for($i = 1; $i <= $attacker_dmg_taken; $i++)
+                {
+                    $rand = $this->rand_needed($skeleton_lp, $war_skeleton_lp, $mage_skeleton_lp);
+                    if($rand == 1)
+                        $skeleton_lp = $skeleton_lp - 1;
+                    else if($rand == 2)
+                        $war_skeleton_lp = $war_skeleton_lp - 1;
+                    else
+                        $mage_skeleton_lp = $mage_skeleton_lp - 1;
+                }
+                if($skeleton_lp <=0 )
+                    $attacker->getUnits()[0]->setSkeleton(0);
+                else
+                    $attacker->getUnits()[0]->setSkeleton(ceil($skeleton_lp/2));
+                if($war_skeleton_lp <= 0)
+                    $attacker->getUnits()[0]->setSkeletonWar(0);
+                else
+                    $attacker->getUnits()[0]->setSkeletonWar(ceil($war_skeleton_lp/3));
+                if($mage_skeleton_lp <= 0)
+                    $attacker->getUnits()[0]->setMageSkeleton(0);
+                else
+                    $attacker->getUnits()[0]->setMageSkeleton(ceil($mage_skeleton_lp/2));
+
+                $em->persist($attacker);
+
+                //Perte d'unité du défenseur
+                $def_skeleton_lp = $def_skeleton*2;
+                $def_war_skeleton_lp = $def_war_skeleton*3;
+                $def_mage_skeleton_lp = $def_mage_skeleton*5;
+                for($i = 1; $i <= $defender_dmg_taken; $i++)
+                {
+                    $rand = $this->rand_needed($def_skeleton_lp, $def_war_skeleton_lp, $def_mage_skeleton_lp);
+                    if($rand == 1)
+                        $def_skeleton_lp = $def_skeleton_lp - 1;
+                    else if($rand == 2)
+                        $def_war_skeleton_lp = $def_war_skeleton_lp - 1;
+                    else
+                        $def_mage_skeleton_lp = $def_mage_skeleton_lp - 1;
+                }
+                if($def_skeleton_lp <=0 )
+                    $defender->getUnits()[0]->setSkeleton(0);
+                else
+                    $defender->getUnits()[0]->setSkeleton(ceil($skeleton_lp/2));
+                if($def_war_skeleton_lp <= 0)
+                    $defender->getUnits()[0]->setSkeletonWar(0);
+                else
+                    $defender->getUnits()[0]->setSkeletonWar(ceil($war_skeleton_lp/3));
+                if($def_mage_skeleton_lp <= 0)
+                    $defender->getUnits()[0]->setMageSkeleton(0);
+                else
+                    $defender->getUnits()[0]->setMageSkeleton(ceil($mage_skeleton_lp/2));
+
+                $em->remove($defence_log);
+                $em->persist($defender); 
+                
+                //On envoie 2 messages
+
+                $mess_def = new Message;
+                $mess_atk = new Message;
+
+                
+                $mess_def->setPlayer($defender->getPlayer());
+                $mess_atk->setPlayer($player);
+                $mess_def->setVu(false);
+                $mess_atk->setVu(false);
+                $mess_def->setSender("Rapport");
+                $mess_atk->setSender("Rapport");
+                $mess_def->setMessType("Defense");
+                $mess_atk->setMessType("Attaque");
+                $mess_def->setDateSend(date_create());
+                $mess_atk->setDateSend(date_create());
+                
+                $mess_def->setMessage("Vous avez défendu contre {$attacker->getPseudo()} à 
+                    {$now->format('Y-m-d H:i:s')}.\nIl vous reste
+                    {$defender->getUnits()[0]->getSkeleton()} squelettes, 
+                    {$defender->getUnits()[0]->getSkeletonWar()} guerriers squelettes et
+                    {$defender->getUnits()[0]->getMageSkeleton()} mages squelettes.");
+
+
+                $mess_atk->setMessage("Vous avez attaqué {$defender->getPseudo()} à 
+                    {$now->format('Y-m-d H:i:s')}.\nIl vous reste
+                    {$attacker->getUnits()[0]->getSkeleton()} squelettes, 
+                    {$attacker->getUnits()[0]->getSkeletonWar()} guerriers squelettes et
+                    {$attacker->getUnits()[0]->getMageSkeleton()} mages squelettes.");
+
+                $em->persist($mess_atk);
+                $em->persist($mess_def);
+                $rep = 'rep';
+            } 
         }
 
-
-        return new Response('');
+        $em->flush();
+        return new Response($rep);
     }
 
     /**
@@ -347,17 +651,23 @@ class SkOController extends Controller
         $current_char = $this->getDoctrine()
                 ->getRepository('AppBundle:Characters')
                 ->findOneByPseudo($current_char_pseudo);
+        $skeleton = $request->request->get('skeleton');
+        $war_skeleton = $request->request->get('war_skeleton');
+        $mage_skeleton = $request->request->get('mage_skeleton');
+
         $attack_log = new AttackLog;
         $attack_log->setStartingTime(date_create());
         $travel_time = abs($character_to_attack->getLocation()[0]->getRegion() - $current_char->getLocation()[0]->getRegion())*10 + abs($character_to_attack->getLocation()[0]->getEmplacement() - $current_char->getLocation()[0]->getEmplacement())*5;
-        echo $travel_time;
-        echo "  ";
-        echo $attack_log->getStartingTime()->format('Y-m-d H:i:s');
-        $travel_time_date = $attack_log->getStartingTime()->add(new \DateInterval("PT{$travel_time}S"));
-        echo $travel_time_date->format('Y-m-d H:i:s');
-
-        
-
+        $travel_time_date = date_create()->add(new \DateInterval("PT{$travel_time}S"));
+        $attack_log->setCampaignTime($travel_time_date);
+        $attack_log->setAttacker($current_char);
+        $attack_log->setDefender($character_to_attack);
+        $attack_log->setSkeleton($skeleton);
+        $attack_log->setWarSkeleton($war_skeleton);
+        $attack_log->setMageSkeleton($mage_skeleton);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($attack_log); 
+        $em->flush();
 
         return new Response('send');
     }
@@ -376,7 +686,6 @@ class SkOController extends Controller
         $messages = $this->getDoctrine()
                 ->getRepository('AppBundle:Message')
                 ->findByPlayer($player->getId());
-        dump($messages[0]);
 
         return $this->render('Sko/messagerie.html.twig', array(
             'messages' => $messages
@@ -404,29 +713,30 @@ class SkOController extends Controller
 
             foreach ($attacks_log as $attack_log) {
                 $defender = $attack_log->getDefender();
-                $unit_number = $attack_log->getUnitNumber();
-                $skeleton_or_skeletons = " squelettes";
-                $when_hit = date_diff(date_create(), $attack_log->getCampaignTime());
+                $skeleton = $attack_log->getSkeleton();
+                $war_skeleton = $attack_log->getWarSkeleton();
+                $mage_skeleton = $attack_log->getMageSkeleton();
+                $when_hit = $attack_log->getCampaignTime();
 
-                if($unit_number == 1)
-                    $skeleton_or_skeletons = " squelette";
-                $to_string = "Votre personnage "+$pseudo_char+" attaque "+$defender+" avec "+
-                $unit_number+$skeleton_or_skeletons+", votre troupe est partie le "+$attack_log->getStartTime()+
-                ".\nVous atteindrez l'ennemi dans "+$when_hit->format('%R%a days')+".";
+                $to_string = "Votre personnage {$pseudo_char} attaque {$defender->getPseudo()} avec 
+                {$skeleton} squelettes, {$war_skeleton} guerriers squelettes et {$mage_skeleton}
+                 mage squelettes.\nVotre troupe est partie le {$attack_log->getStartingTime()->format('Y-m-d H:i:s')}
+                .\nVous atteindrez l'ennemi dans {$when_hit->format('Y-m-d H:i:s')}.";
                 array_push($attacks_displayed, $to_string);
             }
 
             foreach ($defends_log as $defend_log) {
                 $attacker = $defend_log->getAttacker();
-                $unit_number = $defend_log->getUnitNumber();
-                $skeleton_or_skeletons = " squelettes";
-                $when_hit = date_diff(date_create(), $defend_log->getCampaignTime());
+                $skeleton = $defend_log->getSkeleton();
+                $war_skeleton = $defend_log->getWarSkeleton();
+                $mage_skeleton = $defend_log->getMageSkeleton();
+                $when_hit = $defend_log->getCampaignTime();
 
-                if($unit_number == 1)
-                    $skeleton_or_skeletons = " squelette";
-                $to_string = "Votre personnage "+$pseudo_char+" va défendre contre "+$attacker+"qui arrive avec "+
-                $unit_number+$skeleton_or_skeletons+", sa troupe est partie le "+$defend_log->getStartTime()+
-                ".\nL'ennemi atteind vos rempart dans "+$when_hit->format('%R%a days')+".";
+                
+                $to_string = "Votre personnage {$pseudo_char} va se défendre contre {$attacker->getPseudo()}, sa troupe 
+                est constituée de {$skeleton} squelettes, {$war_skeleton} guerriers squelettes et {$mage_skeleton}
+                 mage squelettes.\nL'attaquant est partie le {$defend_log->getStartingTime()->format('Y-m-d H:i:s')}
+                et vous atteindra le {$when_hit->format('Y-m-d H:i:s')}.";
                 array_push($defences_displayed, $to_string);
             }
         }
@@ -434,20 +744,20 @@ class SkOController extends Controller
         if((count($attacks_displayed)>0) && (count($defences_displayed)>0))
         {
             return $this->render('Sko/attack_log.html.twig', array(
-            'attacks' -> $attacks_displayed,
-            'defences' -> $defences_displayed
+            'attacks' => $attacks_displayed,
+            'defences' => $defences_displayed
             ));
         }
         else if((count($attacks_displayed)>0))
         {
             return $this->render('Sko/attack_log.html.twig', array(
-            'attacks' -> $attacks_displayed,
+            'attacks' => $attacks_displayed
             ));
         }
         else if((count($defences_displayed)>0))
         {
             return $this->render('Sko/attack_log.html.twig', array(
-            'defences' -> $defences_displayed
+            'defences' => $defences_displayed
             ));
         }
         else
@@ -773,7 +1083,7 @@ class SkOController extends Controller
         $check_map = $this->getDoctrine()->getRepository("AppBundle:Map")->findById(5);
         if($check_map)
         {
-            return new Response('la map a déjà été initialisé.');
+            return new Response('la map a déjà été initialisée.');
         }
         else
         {
@@ -797,7 +1107,7 @@ class SkOController extends Controller
             }
 
             $em->flush();
-            return new Response('La map vient d\'etre initialisé.');
+            return new Response('La map vient d\'etre initialisée.');
         }
 
 

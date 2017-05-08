@@ -2,13 +2,20 @@
 
 {% block body %}
     <div id="display_messages">
-        {% for message in messages%}
-            <p>________________________________________________________________________</p>
-            <h2>Envoyé le {{ message.datesend |date("m/d/Y") }} à  {{ message.datesend |date("h:ia") }} par {{ message.sender }} :</h2>
-            <p>{{ message.message }}</p>
-            <input type="submit" value="Répondre à {{ message.sender }}" onclick="window.location='/carte?to={{ message.sender }}';" />
 
+        {% for message in messages%}
+        	{% if message.messtype == "Attaque" or message.messtype == "Defense"%}
+	    		<p>________________________________________________________________________</p>
+	            <h2>Envoyé le {{ message.datesend |date("m/d/Y") }} à  {{ message.datesend |date("h:ia") }}, {{ message.sender }} :</h2>
+	            <p>{{ message.message }}</p>
+	    	{%else%}
+	            <p>________________________________________________________________________</p>
+	            <h2>Envoyé le {{ message.datesend |date("m/d/Y") }} à  {{ message.datesend |date("h:ia") }} par {{ message.sender }} :</h2>
+	            <p>{{ message.message }}</p>
+	            <input type="submit" value="Répondre à {{ message.sender }}" onclick="window.location='/carte?to={{ message.sender }}';" />
+            {% endif %}
         {% endfor %}
+        
     </div>
 
 {% endblock %}
